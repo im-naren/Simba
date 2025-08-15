@@ -233,6 +233,8 @@ class DuplicateTabUI {
     }
   }
 
+
+
   // Show error state
   showError(message) {
     document.getElementById('error-message').textContent = message;

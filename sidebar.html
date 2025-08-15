@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nTabManager - Vertical Tabs</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <div class="sidebar-container">
+    <!-- Header -->
+    <header class="sidebar-header">
+      <div class="header-content">
+        <h1 class="sidebar-title">
+          <span class="title-icon">🗂️</span>
+          nTabManager
+        </h1>
+        <div class="header-actions">
+          <button id="position-btn" class="icon-btn" title="Change sidebar position">
+            📍
+          </button>
+          <button id="settings-btn" class="icon-btn" title="Settings">
+            ⚙️
+          </button>
+          <button id="refresh-btn" class="icon-btn" title="Refresh tabs">
+            🔄
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tab Statistics -->
+      <div class="tab-stats">
+        <div class="stat-item">
+          <span class="stat-number" id="total-tabs">0</span>
+          <span class="stat-label">Total Tabs</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="duplicate-tabs">0</span>
+          <span class="stat-label">Duplicates</span>
+        </div>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button id="close-duplicates-btn" class="action-btn primary">
+          🧹 Close Duplicates
+        </button>
+        <button id="close-others-btn" class="action-btn secondary">
+          📌 Close Others
+        </button>
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input type="text" id="search-tabs" placeholder="Search tabs..." class="search-input">
+        <button id="clear-search" class="search-clear">✕</button>
+      </div>
+    </header>
+
+    <!-- Sidebar Position Settings (hidden by default) -->
+    <div id="position-settings" class="position-settings hidden">
+      <h3>Sidebar Position</h3>
+      <div class="position-options">
+        <button class="position-option" data-position="left">
+          <div class="position-preview left"></div>
+          Left
+        </button>
+        <button class="position-option" data-position="right">
+          <div class="position-preview right"></div>
+          Right
+        </button>
+        <button class="position-option" data-position="top">
+          <div class="position-preview top"></div>
+          Top
+        </button>
+        <button class="position-option" data-position="bottom">
+          <div class="position-preview bottom"></div>
+          Bottom
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Groups Container -->
+    <div class="tabs-container">
+      <!-- Windows will be grouped here -->
+      <div id="windows-container">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-icon">📭</div>
+        <h3>No Tabs Found</h3>
+        <p>Open some tabs to see them here</p>
+      </div>
+      
+      <!-- Loading State -->
+      <div id="loading-state" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading tabs...</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="sidebar-footer">
+      <div class="footer-actions">
+        <button id="new-tab-btn" class="footer-btn">
+          ➕ New Tab
+        </button>
+        <button id="new-window-btn" class="footer-btn">
+          🪟 New Window
+        </button>
+      </div>
+      <div class="footer-info">
+        <span class="auto-status">🤖 Auto-cleanup: ON</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>
