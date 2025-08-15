@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nTabManager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">🗂️ nTabManager</h1>
+      <p class="subtitle">Auto-closing duplicates in real-time</p>
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Auto-detection active</span>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Loading State -->
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Scanning for duplicate tabs...</p>
+      </div>
+
+      <!-- No Duplicates Found -->
+      <div id="no-duplicates" class="message-state hidden">
+        <div class="icon">✨</div>
+        <h3>All Clean!</h3>
+        <p>No duplicate tabs found. Auto-detection is running in the background!</p>
+        <button id="scan-again" class="btn btn-secondary">Scan Again</button>
+      </div>
+
+      <!-- Duplicates Found -->
+      <div id="duplicates-found" class="duplicates-section hidden">
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-number" id="duplicate-count">0</span>
+            <span class="stat-label">Duplicate Tabs</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" id="group-count">0</span>
+            <span class="stat-label">Groups</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="close-all" class="btn btn-primary">
+            🧹 Close All Duplicates
+          </button>
+          <button id="refresh-scan" class="btn btn-secondary">
+            🔄 Refresh Scan
+          </button>
+        </div>
+        
+        <div class="debug-actions" style="margin-top: 10px;">
+          <button id="test-auto-detection" class="btn btn-secondary" style="width: 100%;">
+            🔧 Test Auto-Detection Now
+          </button>
+        </div>
+
+        <div class="duplicate-groups" id="duplicate-groups">
+          <!-- Duplicate groups will be populated here -->
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="message-state hidden">
+        <div class="icon">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p id="error-message">Unable to scan for duplicate tabs.</p>
+        <button id="retry-scan" class="btn btn-secondary">Try Again</button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>🤖 Auto-detection: New duplicates are closed automatically</p>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html> 
