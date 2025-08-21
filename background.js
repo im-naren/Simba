@@ -257,6 +257,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           });
           break;
           
+        case 'openTabManager':
+          // Open tab manager (for now, just open the popup page in a new tab)
+          await chrome.tabs.create({ url: chrome.runtime.getURL('popup.html') });
+          sendResponse({ success: true });
+          break;
           
         default:
           sendResponse({ success: false, error: 'Unknown action' });

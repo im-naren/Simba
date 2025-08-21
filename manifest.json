@@ -2,15 +2,25 @@
   "manifest_version": 3,
   "name": "nTabManager",
   "version": "2.0.0",
-  "description": "Real-time duplicate tab detection and automatic closure. Keeps your browser clean by automatically closing duplicate tabs as soon as they're opened.",
+  "description": "Beautiful new tab page with today's calendar, recent Google Workspace files, and real-time duplicate tab detection. Replaces your new tab with a productivity dashboard.",
   "author": "Your Name",
   "permissions": [
     "tabs",
-    "storage"
+    "storage", 
+    "identity",
+    "history"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "https://www.googleapis.com/*"
   ],
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/drive.readonly"
+    ]
+  },
   "action": {
     "default_title": "nTabManager - Duplicate Tab Detection",
     "default_popup": "popup.html",
@@ -23,6 +33,9 @@
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
   },
 
   "icons": {
