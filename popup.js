@@ -1,4 +1,4 @@
-// Popup script for nTabManager Extension
+// Popup script for Duplicate Tab Detection
 
 class DuplicateTabUI {
   constructor() {
@@ -232,6 +232,8 @@ class DuplicateTabUI {
       alert('Error testing auto-detection: ' + error.message);
     }
   }
+
+
 
   // Show error state
   showError(message) {

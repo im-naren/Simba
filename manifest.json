@@ -1,32 +1,91 @@
 {
   "manifest_version": 3,
-  "name": "nTabManager",
-  "version": "1.0.0",
-  "description": "Automatically closes duplicate tabs in real-time. Keep your browser organized with intelligent tab management and instant duplicate detection across all windows.",
+  "name": "Simba: One Extension to rule them all",
+  "version": "1.1.1",
+  "description": "Advanced tab manager with Arc-like vertical spaces and intelligent duplicate detection",
   "author": "Your Name",
   "permissions": [
-    "tabs"
+    "tabs",
+    "tabGroups",
+    "sidePanel",
+    "storage",
+    "bookmarks",
+    "alarms",
+    "commands",
+    "favicon",
+    "history"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
+  "side_panel": {
+    "default_path": "sidebar.html"
+  },
   "action": {
+    "default_title": "Simba - One Extension to rule them all",
     "default_popup": "popup.html",
-    "default_title": "Find and close duplicate tabs",
     "default_icon": {
-      "16": "icon-16.png",
-      "32": "icon-32.png",
-      "48": "icon-48.png",
-      "128": "icon-128.png"
+      "16": "assets/simba-16.png",
+      "32": "assets/simba-32.png",
+      "48": "assets/simba-48.png",
+      "128": "assets/simba-128.png"
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sidebar.js",
+        "simba-features.js",
+        "assets/*",
+        "_favicon/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "extension_ids": [
+        "*"
+      ]
+    }
+  ],
   "icons": {
-    "16": "icon-16.png",
-    "32": "icon-32.png",
-    "48": "icon-48.png",
-    "128": "icon-128.png"
-  }
-} 
+    "16": "assets/simba-16.png",
+    "32": "assets/simba-32.png",
+    "48": "assets/simba-48.png",
+    "128": "assets/simba-128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+E",
+        "mac": "Command+E"
+      },
+      "description": "Toggle side panel"
+    },
+    "quickPinToggle": {
+      "suggested_key": {
+        "default": "Ctrl+D",
+        "mac": "Command+D"
+      },
+      "description": "Quick Pin/Unpin Tab"
+    },
+    "openSearch": {
+      "suggested_key": {
+        "default": "Ctrl+K",
+        "mac": "Command+K"
+      },
+      "description": "Open search popup"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["search-popup-content.js"],
+      "css": ["search-popup.css"],
+      "run_at": "document_end"
+    }
+  ]
+}

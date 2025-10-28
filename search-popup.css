@@ -1,0 +1,270 @@
+/* Search Popup Overlay */
+.simba-search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2147483647;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 100px;
+  animation: simba-fade-in 0.15s ease-out;
+}
+
+@keyframes simba-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Search Container */
+.simba-search-container {
+  width: 600px;
+  max-width: 90vw;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 16px 70px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: simba-slide-up 0.2s ease-out;
+}
+
+@keyframes simba-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Search Input Section */
+.simba-search-input-container {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.simba-search-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  color: #6b7280;
+}
+
+.simba-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.simba-search-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Results Container */
+.simba-search-results {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.simba-search-results::-webkit-scrollbar {
+  width: 8px;
+}
+
+.simba-search-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.simba-search-results::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.simba-search-results::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Result Item */
+.simba-search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  border-left: 3px solid transparent;
+}
+
+.simba-search-result-item:hover,
+.simba-search-result-item.selected {
+  background-color: #f3f4f6;
+  border-left-color: #3b82f6;
+}
+
+.simba-search-result-item.selected {
+  background-color: #eff6ff;
+}
+
+.simba-result-favicon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.simba-result-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.simba-result-title {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.simba-result-url {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.simba-result-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.simba-result-badge.tab {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.simba-result-badge.bookmark {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+/* Empty State */
+.simba-search-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.simba-search-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  opacity: 0.5;
+}
+
+.simba-search-empty-text {
+  font-size: 14px;
+}
+
+/* Footer */
+.simba-search-footer {
+  padding: 12px 20px;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.simba-search-hints {
+  display: flex;
+  gap: 16px;
+}
+
+.simba-search-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.simba-search-key {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: monospace;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .simba-search-container {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+
+  .simba-search-input-container {
+    border-bottom-color: #374151;
+  }
+
+  .simba-search-input {
+    color: #f9fafb;
+    background: transparent;
+  }
+
+  .simba-search-input::placeholder {
+    color: #6b7280;
+  }
+
+  .simba-search-result-item:hover,
+  .simba-search-result-item.selected {
+    background-color: #374151;
+  }
+
+  .simba-search-result-item.selected {
+    background-color: #1e3a5f;
+  }
+
+  .simba-result-title {
+    color: #f9fafb;
+  }
+
+  .simba-result-url {
+    color: #9ca3af;
+  }
+
+  .simba-search-footer {
+    background-color: #111827;
+    border-top-color: #374151;
+  }
+
+  .simba-search-key {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+}
+

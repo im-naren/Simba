@@ -1,14 +1,14 @@
-# Privacy Policy for nTabManager
+# Privacy Policy for Simba
 
 **Last updated: January 2025**
 
 ## Overview
 
-nTabManager ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how our Chrome extension handles information.
+Simba ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how our Chrome extension handles information.
 
 ## Information We Do NOT Collect
 
-nTabManager is designed with privacy as a core principle. We do NOT collect, store, transmit, or have access to any of the following:
+Simba is designed with privacy as a core principle. We do NOT collect, store, transmit, or have access to any of the following:
 
 - ❌ Your browsing history
 - ❌ Personal information
@@ -20,7 +20,7 @@ nTabManager is designed with privacy as a core principle. We do NOT collect, sto
 
 ## What Our Extension Does
 
-nTabManager only:
+Simba only:
 
 - ✅ Reads tab URLs to identify duplicates (processed locally only)
 - ✅ Accesses tab titles for display in the extension popup
@@ -37,7 +37,7 @@ All duplicate detection and tab management happens entirely on your local device
 
 ## Permissions Explanation
 
-nTabManager requests these Chrome permissions:
+Simba requests these Chrome permissions:
 
 - **"tabs"** - Required to access tab information for duplicate detection
 - **"host_permissions: <all_urls>"** - Required to work on all websites for automatic duplicate detection
@@ -50,7 +50,7 @@ Since we don't collect any data, there is no data to secure, breach, or compromi
 
 ## Third-Party Services
 
-nTabManager does not integrate with, connect to, or use any third-party services, analytics, or tracking tools.
+Simba does not integrate with, connect to, or use any third-party services, analytics, or tracking tools.
 
 ## Changes to Privacy Policy
 
@@ -58,12 +58,12 @@ We may update this Privacy Policy from time to time. Any changes will be reflect
 
 ## Open Source
 
-nTabManager's source code is available for review, allowing you to verify our privacy claims and see exactly how the extension works.
+Simba's source code is available for review, allowing you to verify our privacy claims and see exactly how the extension works.
 
 ## Contact
 
-If you have questions about this Privacy Policy or nTabManager's privacy practices, please contact us at [your-email@example.com].
+If you have questions about this Privacy Policy or Simba's privacy practices, please contact us at [your-email@example.com].
 
 ---
 
-**Summary: nTabManager is completely private. We can't see your data because we don't collect it. Everything happens locally on your device.** 
+**Summary: Simba is completely private. We can't see your data because we don't collect it. Everything happens locally on your device.** 

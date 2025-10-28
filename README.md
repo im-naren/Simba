@@ -1,106 +1,233 @@
-# nTabManager Chrome Extension
+# Simba: Smart Tab Management
 
-A smart Chrome extension that automatically identifies and closes duplicate tabs to keep your browser organized and improve performance.
+<div align="center">
+  <h3>🚀 Advanced Chrome extension combining Arc-style vertical spaces with intelligent duplicate detection</h3>
+</div>
 
-## Features
+---
 
-- 🤖 **Real-Time Auto-Detection**: Automatically detects and closes duplicate tabs as soon as they're opened
-- 🔍 **Smart Detection**: Finds duplicate tabs across all windows with intelligent URL matching
-- 🧹 **One-Click Cleanup**: Manual scan and close all duplicates with a single button click
-- 🎯 **Selective Removal**: Choose which duplicate groups to close manually
-- 📊 **Clear Statistics**: See how many duplicates were found during manual scans
-- 🎨 **Modern UI**: Clean, intuitive interface with smooth animations and live status indicator
-- ⚡ **Fast Performance**: Efficient tab scanning and real-time duplicate management
+## ✨ Features
 
-## How It Works
+### 📱 **Arc-Style Vertical Spaces**
 
-The extension operates in two modes:
+- **Professional sidebar interface** with Arc browser's innovative space management
+- **Multiple Spaces** - Organize tabs into distinct workspaces (Work, Personal, Projects, etc.)
+- **Pinned Tabs** - Keep favorite sites accessible across all spaces
+- **Folders** - Group related tabs within spaces for better organization
+- **Tab Archiving** - Auto-archive idle tabs to keep spaces clean
+- **Beautiful UI** - Modern, customizable color themes for each space
 
-### 🤖 **Automatic Mode (Real-time)**
-1. Monitors tab creation and navigation events in real-time
-2. When a new tab opens or navigates to a URL, checks for existing duplicates
-3. Automatically closes older tabs with the same URL (keeps the newest one)
-4. Works silently in the background without user intervention
-5. Skips Chrome internal pages and new tab pages
+### 🤖 **Intelligent Duplicate Detection**
 
-### 🔍 **Manual Mode (On-demand)**
-1. Scans all open tabs across all Chrome windows when popup is opened
-2. Groups tabs by URL (ignoring URL fragments for better matching)
-3. Identifies groups with multiple tabs as duplicates
-4. Shows statistics and duplicate groups in the popup interface
-5. Allows selective or bulk removal of duplicates
-6. Keeps the most recently accessed tab from each group
+- **Real-time Detection** - Automatically detects and closes duplicate tabs as they're created
+- **Smart URL Matching** - Intelligent normalization ignores fragments and tracking parameters
+- **Manual Control** - Use the popup to scan and selectively close duplicates
+- **Safe Closing** - Race condition protection ensures reliable tab management
+- **Statistics** - View detailed duplicate tab analytics
 
-## Installation
+### ⚡ **Powerful Tab Management**
 
-### From Source (Developer Mode)
+- **Quick Actions** - One-click tab switching, pinning, and closing
+- **Tree View** - Group tabs by domain for better organization and overview
+- **Keyboard Shortcuts** - `Ctrl+E` (Cmd+E on Mac) to toggle sidebar, `Ctrl+D` to quick pin/unpin
+- **Search & Filter** - Find tabs instantly across all spaces
+- **Drag & Drop** - Easily move tabs between spaces and folders
+- **Auto-Archive** - Automatically archive idle tabs after configurable time
 
-1. Download or clone this repository
+### 🎨 **Beautiful Design**
+
+- **Dark Theme** - Professional VS Code-inspired dark interface
+- **Color-Coded Spaces** - 8 beautiful color themes to organize your workflow
+- **Smooth Animations** - Polished transitions and interactions
+- **Responsive** - Adapts beautifully to any side panel width
+
+## 🔧 Requirements
+
+- **Chrome V114+** for Side Panel API support
+- Chrome browser with extensions enabled
+
+## 📦 Installation
+
+### Method 1: Load Unpacked (Development)
+
+1. Clone or download this repository
 2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right corner
-4. Click "Load unpacked" and select the `duplicate-tabs` folder
-5. The extension icon will appear in your Chrome toolbar
+3. Enable **Developer mode** (toggle in top right)
+4. Click **Load unpacked**
+5. Select the project folder
+6. Click the Simba extension icon to open the side panel
 
-### Using the Extension
+### Method 2: Chrome Web Store (Coming Soon)
 
-**Automatic Operation:**
-- The extension works automatically in the background
-- When you open a duplicate tab, the older one is closed instantly
-- No user action required - just install and enjoy a cleaner browser!
+The extension will soon be available on the Chrome Web Store for one-click installation.
 
-**Manual Control:**
-1. Click the extension icon in your Chrome toolbar
-2. The extension will scan for any remaining duplicate tabs
-3. View the results:
-   - **All Clean**: No duplicates found (auto-detection is still running)
-   - **Duplicates Found**: Shows statistics and duplicate groups
-4. Choose your action:
-   - **Close All Duplicates**: Removes all duplicate tabs at once
-   - **Close Group**: Remove duplicates from a specific website
-   - **Refresh Scan**: Re-scan for duplicates
+## 🎯 Usage
 
-## Privacy & Permissions
+### Side Panel (Main Interface)
 
-This extension requires:
-- `tabs`: To access and manage your browser tabs
-- `activeTab`: To interact with the currently active tab
+**Opening the Sidebar:**
+- Click the Simba icon in Chrome toolbar, OR
+- Press `Ctrl+E` (Windows/Linux) or `Cmd+E` (Mac)
 
-**Privacy Note**: This extension:
-- ✅ Works entirely locally - no data is sent to external servers
-- ✅ Only accesses tab URLs and titles for duplicate detection
-- ✅ Does not store or track your browsing history
-- ✅ Does not access page content or personal data
+**Managing Spaces:**
+- All your spaces are displayed as collapsible groups in the Tabs section
+- Each space shows its name, color indicator, and tab count
+- Click any space header to expand/collapse and view its tabs
+- See all your tabs across all spaces in one unified view
+- No need to switch between spaces - everything is accessible at once
 
-## Technical Details
+**Working with Tabs:**
+- **Open new tab**: Click the "+ New Tab" button
+- **Switch to tab**: Click any tab in the list
+- **Pin/Unpin tab**: Drag tab to "Pinned" section or press `Ctrl+D`
+- **Move tab**: Drag tab to different space or folder
+- **Close tab**: Hover over tab and click the × button or middle-click
+- **Tree View**: Click the tree view toggle button to group tabs by domain
+  - Tabs are automatically grouped by website
+  - Click domain header to expand/collapse groups
+  - See tab count per domain at a glance
+  - All tab actions (switch, close, context menu) work in tree view
 
-- **Manifest Version**: 3 (latest Chrome extension standard)
-- **Architecture**: Service Worker background script + popup interface
-- **Compatibility**: Chrome 88+ (Manifest V3 support)
+**Creating Folders:**
+- Click the space options menu (⋮) and select "New Folder"
+- Name your folder and drag tabs into it
+- Click folder header to expand/collapse
 
-## Development
+**Auto-Archive:**
+- Idle tabs are automatically archived after the configured time
+- View archived tabs by clicking the archive button in space header
+- Click any archived tab to restore it
 
-### Project Structure
+### Duplicate Detection (Popup)
+
+**Opening the Popup:**
+- Right-click the Simba icon and select "Open Popup", OR
+- Click the extension icon if you've configured it to show popup
+
+**Using Duplicate Detection:**
+- **Automatic**: Duplicates are automatically closed in real-time
+- **Manual Scan**: Click "Scan for Duplicates" to find all duplicates
+- **Selective Closing**: Close specific duplicate groups individually
+- **Close All**: Remove all duplicates at once
+
+### Keyboard Shortcuts
+
+- `Ctrl+E` / `Cmd+E` - Toggle side panel
+- `Ctrl+D` / `Cmd+D` - Quick pin/unpin current tab
+- `Ctrl+F` - Search tabs (when sidebar is focused)
+
+## ⚙️ Configuration
+
+### Auto-Archive Settings
+
+Configure automatic tab archiving to keep your spaces clean:
+
+1. Right-click extension icon → Options
+2. Enable "Auto-archive idle tabs"
+3. Set the idle time threshold (in minutes)
+4. Tabs idle longer than this will be automatically archived
+
+### Duplicate Detection
+
+The duplicate detection runs automatically in the background. You can:
+- Disable auto-close in settings (coming soon)
+- Use manual scan mode from the popup
+- View statistics on duplicate tab patterns
+
+## 🏗️ Architecture
+
+### File Structure
+
 ```
-duplicate-tabs/
-├── manifest.json      # Extension configuration
-├── background.js      # Service worker for tab management
-├── popup.html         # Extension popup interface
-├── popup.js          # Popup interaction logic
-├── styles.css        # Modern UI styling
-├── icon*.png         # Extension icons (16, 32, 48, 128px)
-└── README.md         # This file
+simba/
+├── manifest.json              # Extension configuration
+├── background.js              # Service worker (duplicate detection + auto-archive)
+├── sidebar.html               # Main sidebar interface
+├── sidebar.js                 # Sidebar logic (spaces, tabs, folders)
+├── styles.css                 # Sidebar styling
+├── popup.html                 # Duplicate detection popup
+├── popup.js                   # Popup logic
+├── chromeHelper.js            # Chrome API utilities
+├── domManager.js              # DOM manipulation helpers
+├── localstorage.js            # Storage management
+├── utils.js                   # Shared utilities
+└── icons.js                   # Icon definitions
 ```
 
-### Key Components
+### Key Technologies
 
-- **DuplicateTabManager**: Core logic for finding and managing duplicate tabs
-- **DuplicateTabUI**: Popup interface for user interactions
-- **URL Normalization**: Smart URL comparison (removes fragments, handles query parameters)
+- **Manifest V3** - Latest Chrome extension platform
+- **Side Panel API** - Native Chrome sidebar integration
+- **ES6 Modules** - Modern JavaScript architecture
+- **Chrome Storage API** - Persistent data management
+- **Chrome Tabs API** - Tab manipulation and monitoring
+- **Chrome Bookmarks API** - Space persistence
 
-## Contributing
+## 🤝 Contributing
 
-Feel free to submit issues, feature requests, or pull requests to improve this extension.
+Contributions are welcome! Here's how you can help:
 
-## License
+1. **Report Bugs** - Open an issue with detailed reproduction steps
+2. **Suggest Features** - Share your ideas in GitHub Issues
+3. **Submit PRs** - Fork the repo and submit pull requests
 
-This project is open source and available under the MIT License.
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/simba.git
+cd simba
+
+# Load in Chrome
+# 1. Go to chrome://extensions/
+# 2. Enable Developer Mode
+# 3. Click "Load unpacked"
+# 4. Select the project folder
+```
+
+### Code Style
+
+- Use ES6+ features
+- Follow existing code patterns
+- Add comments for complex logic
+- Test duplicate detection thoroughly
+
+## 🐛 Known Issues
+
+- Auto-archive requires tab to be in a valid group/space
+- Duplicate detection may not work for certain internal Chrome URLs
+- Calendar integration requires Google OAuth setup
+
+## 📝 Future Enhancements
+
+- [ ] Settings page for duplicate detection preferences
+- [ ] Tab session history and restore
+- [ ] Cloud sync for spaces across devices
+- [ ] Tab grouping improvements
+- [ ] Enhanced search with filters
+- [ ] Tab suspender for memory optimization
+- [ ] Export/import spaces configuration
+
+## 📄 License
+
+This project is open source. Feel free to use, modify, and distribute.
+
+## 🙏 Acknowledgments
+
+- **Arc Browser** - Inspiration for the space management system
+- **Arcify** - Original sidebar implementation ([GitHub](https://github.com/nisargkolhe/arcify.git))
+
+## 📧 Support
+
+If you encounter issues or have questions:
+
+1. Check the [Issues](https://github.com/yourusername/simba/issues) page
+2. Create a new issue with detailed information
+3. Join our community discussions
+
+---
+
+<div align="center">
+  <p>Made with ❤️ for productivity enthusiasts</p>
+  <p>⭐ Star this repo if you find it useful!</p>
+</div>
