@@ -246,6 +246,16 @@ function setupGlobalSearch() {
         return;
     }
     
+    // Listen for global Cmd+K command from background script
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === 'focusSidebarSearch') {
+            setTimeout(() => {
+                searchInput.focus();
+                searchInput.select();
+            }, 100); // Small delay to ensure sidebar is visible
+        }
+    });
+    
     let searchTimeout = null;
     
     // Handle search input
@@ -282,32 +292,43 @@ function setupGlobalSearch() {
     
     // Global keyboard shortcuts to focus search
     const focusSearch = () => {
-        requestAnimationFrame(() => {
-            if (searchInput) {
+        if (searchInput) {
+            setTimeout(() => {
                 searchInput.focus();
                 searchInput.select();
-                console.log('✅ Search focused via Cmd+K');
-            }
-        });
+            }, 0);
+        }
     };
     
-    document.addEventListener('keydown', (e) => {
+    // Robust keyboard shortcut handler
+    const handleShortcut = (e) => {
+        const isK = e.key.toLowerCase() === 'k';
+        const isF = e.key.toLowerCase() === 'f';
+        const hasModifier = e.metaKey || e.ctrlKey;
+        
         // Cmd+K or Ctrl+K (primary shortcut)
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        if (hasModifier && isK) {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             focusSearch();
             return false;
         }
         
-        // Cmd+F or Ctrl+F (alternative shortcut)  
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        // Cmd+F or Ctrl+F (alternative shortcut)
+        if (hasModifier && isF) {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             focusSearch();
             return false;
         }
-    }, { capture: true });
+    };
+    
+    // Add listeners at multiple levels for maximum compatibility
+    document.addEventListener('keydown', handleShortcut, true);
+    window.addEventListener('keydown', handleShortcut, true);
+    document.body.addEventListener('keydown', handleShortcut, true);
 }
 
 function performSearch(query) {
@@ -325,9 +346,12 @@ function performSearch(query) {
         
         // Search temporary tabs in list view
         const tempTabs = spaceElement.querySelectorAll('.temporary-tabs .tab');
+        
         tempTabs.forEach(tabElement => {
-            const title = tabElement.querySelector('.tab-title-display')?.textContent?.toLowerCase() || '';
-            const domain = tabElement.querySelector('.tab-domain-display')?.textContent?.toLowerCase() || '';
+            const titleEl = tabElement.querySelector('.tab-title-display');
+            const domainEl = tabElement.querySelector('.tab-domain-display');
+            const title = titleEl?.textContent?.toLowerCase() || '';
+            const domain = domainEl?.textContent?.toLowerCase() || '';
             const matches = title.includes(lowerQuery) || domain.includes(lowerQuery);
             
             tabElement.style.display = matches ? '' : 'none';
@@ -381,14 +405,30 @@ function performSearch(query) {
         
         // Search tree view groups (for both temporary tabs and bookmarks)
         const treeGroups = spaceElement.querySelectorAll('.tree-domain-group, .list-tab-group');
+        
         treeGroups.forEach(groupElement => {
             const groupName = groupElement.querySelector('.tree-domain-name, .list-tab-group-name')?.textContent?.toLowerCase() || '';
-            const groupTabs = groupElement.querySelectorAll('.tree-tab-item');
+            const groupTabs = groupElement.querySelectorAll('.tree-tab-item, .tab');
             let groupHasMatches = groupName.includes(lowerQuery);
             
             groupTabs.forEach(tabElement => {
-                const title = tabElement.querySelector('.tree-tab-title')?.textContent?.toLowerCase() || '';
-                const matches = title.includes(lowerQuery);
+                // Check both tree view and list view tab selectors
+                const treeTitle = tabElement.querySelector('.tree-tab-title')?.textContent?.toLowerCase() || '';
+                const listTitle = tabElement.querySelector('.tab-title-display')?.textContent?.toLowerCase() || '';
+                
+                // Extract domain from URL data attribute
+                const url = tabElement.dataset.url || '';
+                let domain = '';
+                try {
+                    if (url) {
+                        domain = new URL(url).hostname.toLowerCase();
+                    }
+                } catch (e) {
+                    domain = '';
+                }
+                
+                const title = treeTitle || listTitle;
+                const matches = title.includes(lowerQuery) || domain.includes(lowerQuery) || url.toLowerCase().includes(lowerQuery);
                 
                 tabElement.style.display = matches ? '' : 'none';
                 if (matches) {
@@ -481,6 +521,151 @@ function showAllTabsAndBookmarks() {
     });
 }
 
+// Setup settings panel functionality
+function setupSettings() {
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeValue = document.getElementById('themeValue');
+    const settingsTreeViewToggle = document.getElementById('settingsTreeViewToggle');
+    const settingsExpandAll = document.getElementById('settingsExpandAll');
+    const settingsCollapseAll = document.getElementById('settingsCollapseAll');
+    
+    if (!settingsBtn || !settingsPanel) {
+        console.error('❌ Settings elements not found!');
+        return;
+    }
+    
+    // Load saved theme preference
+    chrome.storage.local.get(['theme'], (result) => {
+        const isDark = result.theme === 'dark';
+        themeToggle.checked = isDark;
+        document.body.classList.toggle('dark-mode', isDark);
+        themeValue.textContent = isDark ? 'Dark' : 'Light';
+    });
+    
+    // Load tree view state
+    settingsTreeViewToggle.checked = isTreeViewMode;
+    
+    // Toggle settings panel
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsPanel.classList.toggle('visible');
+    });
+    
+    // Close settings panel
+    settingsCloseBtn.addEventListener('click', () => {
+        settingsPanel.classList.remove('visible');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
+            settingsPanel.classList.remove('visible');
+        }
+    });
+    
+    // Theme toggle
+    themeToggle.addEventListener('change', (e) => {
+        const isDark = e.target.checked;
+        document.body.classList.toggle('dark-mode', isDark);
+        themeValue.textContent = isDark ? 'Dark' : 'Light';
+        chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
+    });
+    
+    // Tree view toggle
+    settingsTreeViewToggle.addEventListener('change', (e) => {
+        isTreeViewMode = e.target.checked;
+        chrome.storage.local.set({ treeViewMode: isTreeViewMode });
+        
+        // Toggle tree view for active space
+        if (activeSpaceId) {
+            const spaceElement = document.querySelector(`[data-space-id="${activeSpaceId}"]`);
+            if (spaceElement) {
+                const listView = spaceElement.querySelector('.tabs-container.list-view');
+                const treeView = spaceElement.querySelector('.tabs-tree-container');
+                
+                if (listView && treeView) {
+                    if (isTreeViewMode) {
+                        listView.style.display = 'none';
+                        treeView.style.display = 'block';
+                        treeView.classList.remove('collapsed');
+                        renderTreeView(activeSpaceId);
+                    } else {
+                        listView.style.display = 'flex';
+                        treeView.style.display = 'none';
+                    }
+                }
+            }
+        }
+    });
+    
+    // Expand all
+    settingsExpandAll.addEventListener('click', () => {
+        expandAll();
+        settingsPanel.classList.remove('visible');
+    });
+    
+    // Collapse all
+    settingsCollapseAll.addEventListener('click', () => {
+        collapseAll();
+        settingsPanel.classList.remove('visible');
+    });
+}
+
+// Expand all folders and groups
+function expandAll() {
+    // Expand all folders
+    document.querySelectorAll('.folder-toggle.collapsed').forEach(toggle => {
+        toggle.click();
+    });
+    
+    // Expand all tree domain groups
+    document.querySelectorAll('.tree-expand-icon:not(.expanded)').forEach(icon => {
+        icon.parentElement.click();
+    });
+    
+    // Expand all list groups
+    document.querySelectorAll('.list-expand-icon:not(.expanded)').forEach(icon => {
+        icon.parentElement.click();
+    });
+    
+    // Expand all bookmark folders
+    document.querySelectorAll('.bookmark-folder-toggle.collapsed').forEach(toggle => {
+        toggle.parentElement.click();
+    });
+    
+    // Expand bookmarks section if collapsed
+    const bookmarksToggle = document.querySelector('.bookmarks-toggle.collapsed');
+    if (bookmarksToggle) {
+        bookmarksToggle.click();
+    }
+}
+
+// Collapse all folders and groups
+function collapseAll() {
+    // Collapse all folders
+    document.querySelectorAll('.folder-toggle:not(.collapsed)').forEach(toggle => {
+        toggle.click();
+    });
+    
+    // Collapse all tree domain groups
+    document.querySelectorAll('.tree-expand-icon.expanded').forEach(icon => {
+        icon.parentElement.click();
+    });
+    
+    // Collapse all list groups
+    document.querySelectorAll('.list-expand-icon.expanded').forEach(icon => {
+        icon.parentElement.click();
+    });
+    
+    // Collapse all bookmark folders
+    document.querySelectorAll('.bookmark-folder-toggle:not(.collapsed)').forEach(toggle => {
+        toggle.parentElement.click();
+    });
+}
+
 // Initialize the sidebar when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
@@ -496,6 +681,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Setup global search functionality
     setupGlobalSearch();
+    
+    // Setup settings panel
+    setupSettings();
+    
+    // Setup toolbar buttons
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+    
+    if (expandAllBtn) {
+        expandAllBtn.addEventListener('click', () => {
+            expandAll();
+        });
+    }
+    
+    if (collapseAllBtn) {
+        collapseAllBtn.addEventListener('click', () => {
+            collapseAll();
+        });
+    }
 
     // --- Space Switching with Trackpad Swipe ---
     let isSwiping = false;
@@ -1368,14 +1572,16 @@ async function createTreeTabElement(tab, spaceId, isBookmark = false) {
     const tabDiv = document.createElement('div');
     tabDiv.className = 'tree-tab-item';
     
+    // Always store URL for search functionality
+    tabDiv.dataset.url = tab.url;
+    
     if (isBookmark || !tab.id) {
         // Bookmark-only item
         tabDiv.classList.add('inactive', 'bookmark-only');
-        tabDiv.dataset.url = tab.url;
     } else {
         tabDiv.dataset.tabId = tab.id;
-    if (tab.active) {
-        tabDiv.classList.add('active');
+        if (tab.active) {
+            tabDiv.classList.add('active');
         }
     }
     
@@ -2263,9 +2469,12 @@ async function createTabElement(tab, isPinned = false, isBookmarkOnly = false) {
     console.log('Creating tab element:', tab.id, 'IsBookmarkOnly:', isBookmarkOnly);
     const tabElement = document.createElement('div');
     tabElement.classList.add('tab');
+    
+    // Always store URL for search functionality
+    tabElement.dataset.url = tab.url;
+    
     if (isBookmarkOnly) {
         tabElement.classList.add('inactive', 'bookmark-only'); // Add specific class for styling
-        tabElement.dataset.url = tab.url;
     } else {
         tabElement.dataset.tabId = tab.id;
         tabElement.draggable = true;

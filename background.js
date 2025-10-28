@@ -311,9 +311,13 @@ async function runAutoArchiveCheck() {
 // ==================================================
 
 // Configure Chrome side panel behavior
-chrome.sidePanel.setPanelBehavior({
-  openPanelOnActionClick: true
-}).catch(error => console.error(error));
+try {
+  chrome.sidePanel.setPanelBehavior({
+    openPanelOnActionClick: true
+  }).catch(error => console.error('Side panel behavior error:', error));
+} catch (error) {
+  console.error('Side panel API error:', error);
+}
 
 // Extension installation
 chrome.runtime.onInstalled.addListener((details) => {
@@ -349,17 +353,22 @@ if (chrome.contextMenus) {
 chrome.commands.onCommand.addListener(async function(command) {
   if (command === "quickPinToggle") {
     chrome.runtime.sendMessage({ command: "quickPinToggle" });
-  } else if (command === "openSearch") {
-    // Send message to active tab to open search popup
+  } else if (command === "focusSidebarSearch") {
+    // Focus the sidebar search - broadcast to all extension contexts
     try {
-      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (activeTab && !activeTab.url.startsWith('chrome://')) {
-        await chrome.tabs.sendMessage(activeTab.id, { action: 'toggleSearch' });
-      } else {
-        console.log('Cannot open search on chrome:// pages');
+      // Send message to sidebar (extension pages)
+      chrome.runtime.sendMessage({ action: 'focusSidebarSearch' });
+      
+      // Also try to open the sidebar if it's not already open
+      const windows = await chrome.windows.getAll();
+      if (windows.length > 0) {
+        const currentWindow = windows.find(w => w.focused) || windows[0];
+        chrome.sidePanel.open({ windowId: currentWindow.id }).catch(() => {
+          // Sidebar might already be open, ignore error
+        });
       }
     } catch (error) {
-      console.error('Error opening search:', error);
+      console.error('Error focusing sidebar search:', error);
     }
   }
 });

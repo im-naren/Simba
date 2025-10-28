@@ -72,12 +72,12 @@
       },
       "description": "Quick Pin/Unpin Tab"
     },
-    "openSearch": {
+    "focusSidebarSearch": {
       "suggested_key": {
         "default": "Ctrl+K",
         "mac": "Command+K"
       },
-      "description": "Open search popup"
+      "description": "Focus sidebar search"
     }
   },
   "content_scripts": [

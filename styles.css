@@ -201,6 +201,203 @@ h3 {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Settings Panel */
+.settings-panel {
+    position: fixed;
+    top: 56px;
+    right: 12px;
+    width: 220px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px var(--shadow-color);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.settings-panel.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.settings-close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.settings-close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.settings-content {
+    padding: 8px;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: background-color 0.2s ease;
+    gap: 8px;
+}
+
+.settings-item:hover {
+    background: var(--bg-hover);
+}
+
+.settings-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.settings-value {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-left: auto;
+    margin-right: 6px;
+}
+
+.settings-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+/* Settings toggle switch specific styling */
+.settings-toggle .ios-toggle {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.settings-toggle .toggle-label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 22px;
+}
+
+.settings-toggle .toggle-label:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.settings-toggle .ios-toggle:checked + .toggle-label {
+    background-color: #4CD964;
+}
+
+.settings-toggle .ios-toggle:checked + .toggle-label:before {
+    transform: translateX(18px);
+}
+
+.settings-toggle .ios-toggle:focus + .toggle-label {
+    box-shadow: 0 0 1px #4CD964;
+}
+
+/* Dark mode toggle styling */
+body.dark-mode .settings-toggle .toggle-label {
+    background-color: #555;
+}
+
+body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
+    background-color: #4CD964;
+}
+
+.settings-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 6px 0;
+}
+
+.settings-button-item {
+    padding: 0;
+    margin-bottom: 2px;
+}
+
+.settings-button-item:hover {
+    background: transparent;
+}
+
+.settings-action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.settings-action-btn:hover {
+    background: var(--bg-hover);
+}
+
+.settings-action-btn svg {
+    stroke: currentColor;
+    opacity: 0.7;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
 /* Header Toolbar */
 .header-toolbar {
     display: flex;

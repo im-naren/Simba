@@ -14,16 +14,60 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <path d="m21 21-4.35-4.35"></path>
                 </svg>
-                <input type="text" id="globalSearch" class="search-input" placeholder="Search">
+                <input type="text" id="globalSearch" class="search-input" placeholder="Search" tabindex="0">
                 <span class="keyboard-shortcut">⌘ + K</span>
                 <button class="search-clear" id="searchClear" style="display: none;">×</button>
             </div>
             <button class="icon-btn settings-btn" id="settingsBtn" title="Settings">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-2 2l-4.2 4.2m13.2-5.2l-6 6m-6-6l6 6"></path>
+                    <path d="M12 1v3m0 16v3M4.2 4.2l2.1 2.1m11.4 11.4l2.1 2.1M1 12h3m16 0h3M4.2 19.8l2.1-2.1m11.4-11.4l2.1-2.1"></path>
                 </svg>
             </button>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <h3>Settings</h3>
+                <button class="settings-close-btn" id="settingsCloseBtn">×</button>
+            </div>
+            <div class="settings-content">
+                <div class="settings-item">
+                    <span class="settings-label">Theme</span>
+                    <div class="settings-toggle">
+                        <input type="checkbox" id="themeToggle" class="ios-toggle">
+                        <label for="themeToggle" class="toggle-label"></label>
+                    </div>
+                    <span class="settings-value" id="themeValue">Light</span>
+                </div>
+                <div class="settings-item">
+                    <span class="settings-label">Tree View</span>
+                    <div class="settings-toggle">
+                        <input type="checkbox" id="settingsTreeViewToggle" class="ios-toggle">
+                        <label for="settingsTreeViewToggle" class="toggle-label"></label>
+                    </div>
+                </div>
+                <div class="settings-divider"></div>
+                <div class="settings-item settings-button-item">
+                    <button class="settings-action-btn" id="settingsExpandAll">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="7 13 12 18 17 13"></polyline>
+                            <polyline points="7 6 12 11 17 6"></polyline>
+                        </svg>
+                        Expand All
+                    </button>
+                </div>
+                <div class="settings-item settings-button-item">
+                    <button class="settings-action-btn" id="settingsCollapseAll">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="17 11 12 6 7 11"></polyline>
+                            <polyline points="17 18 12 13 7 18"></polyline>
+                        </svg>
+                        Collapse All
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="header-toolbar">
             <button class="toolbar-btn" id="expandAllBtn" title="Expand All">
