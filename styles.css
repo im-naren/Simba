@@ -66,23 +66,15 @@ h3 {
     color: var(--text-primary);
 }
 
-/* Sidebar Header */
+/* Sidebar Header - Link Map Style */
 .sidebar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background-color: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.3s ease;
-    gap: 12px;
-}
-
-.sidebar-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-primary);
+    padding: 8px 12px;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 6px;
 }
 
 /* Search Container */
@@ -91,23 +83,26 @@ h3 {
     position: relative;
     display: flex;
     align-items: center;
-    background-color: var(--bg-primary);
-    border-radius: 8px;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.2s ease;
 }
 
 .search-container:focus-within {
-    border-color: var(--text-secondary);
-    box-shadow: 0 0 0 2px var(--bg-hover);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 .search-icon {
     color: var(--text-secondary);
     flex-shrink: 0;
-    margin-right: 8px;
+    margin-right: 6px;
     stroke: currentColor;
+    opacity: 0.5;
+    width: 14px;
+    height: 14px;
 }
 
 .search-input {
@@ -115,32 +110,47 @@ h3 {
     border: none;
     background: transparent;
     outline: none;
-    font-size: 14px;
+    font-size: 12px;
     color: var(--text-primary);
     font-family: inherit;
 }
 
 .search-input::placeholder {
     color: var(--text-secondary);
-    opacity: 0.7;
+    opacity: 0.5;
+}
+
+.keyboard-shortcut {
+    font-size: 10px;
+    color: var(--text-secondary);
+    opacity: 0.4;
+    margin-left: 6px;
+    padding: 2px 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-weight: 500;
+    flex-shrink: 0;
 }
 
 .search-clear {
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
     padding: 0 4px;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 4px;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
+    transition: all 0.2s;
+    opacity: 0.6;
 }
 
 .search-clear:hover {
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 1;
 }
 
 /* Search Results States */
@@ -160,48 +170,77 @@ h3 {
     pointer-events: none;
 }
 
-.header-controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
 .icon-btn {
     background: none;
     border: none;
-    padding: 6px;
-    border-radius: 6px;
+    padding: 5px;
     cursor: pointer;
+    border-radius: 5px;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: all 0.15s;
+    width: 28px;
+    height: 28px;
 }
 
 .icon-btn:hover {
-    background-color: var(--bg-hover);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
 }
 
 .icon-btn svg {
+    width: 16px;
+    height: 16px;
     stroke: currentColor;
 }
 
-body.dark-mode .sun-icon {
-    display: none !important;
+.settings-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-body.dark-mode .moon-icon {
-    display: block !important;
+/* Header Toolbar */
+.header-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-body:not(.dark-mode) .sun-icon {
-    display: block !important;
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 5px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    opacity: 0.6;
 }
 
-body:not(.dark-mode) .moon-icon {
-    display: none !important;
+.toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    opacity: 1;
+}
+
+.toolbar-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+}
+
+.toolbar-btn.more-btn {
+    margin-left: auto;
 }
 
 .spotlight-dialog {
@@ -251,7 +290,7 @@ body:not(.dark-mode) .moon-icon {
     transition: background-color 0.3s ease;
 }
 
-.sidebar-container > *:not(.sidebar-header) {
+.sidebar-container > *:not(.sidebar-header):not(.header-toolbar) {
     padding-left: 8px;
     padding-right: 8px;
 }
@@ -346,9 +385,7 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .space-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: none !important;
 }
 
 .space-name {
@@ -475,11 +512,11 @@ body:not(.dark-mode) .moon-icon {
 .color-swatch[data-color="purple"] { background-color: #A78BFA; }
 .color-swatch[data-color="cyan"] { background-color: #22D3EE; }
 .folder {
-    margin: 2px 0;
-    border-radius: 6px;
+    margin: 0;
+    border-radius: 4px;
     overflow: visible;
     background: transparent;
-    transition: all 0.2s;
+    transition: none;
     position: relative;
     z-index: 1;
 }
@@ -512,12 +549,13 @@ body:not(.dark-mode) .moon-icon {
 .folder-header {
     display: flex;
     align-items: center;
-    padding: 4px 8px 4px 4px;
+    padding: 2px 4px 2px 2px;
     cursor: pointer;
-    border-radius: 6px;
-    transition: background-color 0.2s;
+    border-radius: 4px;
+    transition: background-color 0.15s;
     user-select: none;
     position: relative;
+    min-height: 24px;
 }
 
 .folder-header:hover {
@@ -583,10 +621,10 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .folder-toggle svg {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     stroke: currentColor;
-    transition: transform 0.2s;
+    transition: transform 0.15s;
 }
 
 .folder-toggle:hover {
@@ -598,7 +636,7 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .folder-content {
-    padding: 0 0 0 12px;
+    padding: 0 0 0 10px;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -612,10 +650,10 @@ body:not(.dark-mode) .moon-icon {
     position: absolute;
     left: 8px;
     top: 0;
-    bottom: 8px;
-    width: 2px;
+    bottom: 4px;
+    width: 1px;
     background: var(--group-line-color, var(--border-color));
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .folder-content.collapsed {
@@ -626,19 +664,19 @@ body:not(.dark-mode) .moon-icon {
 /* Add horizontal connecting lines to tabs within folders */
 .folder-content > .tab {
     position: relative;
-    margin-left: 12px;
-    margin-bottom: 2px;
+    margin-left: 10px;
+    margin-bottom: 0;
 }
 
 .folder-content > .tab::before {
     content: '';
     position: absolute;
-    left: -12px;
+    left: -10px;
     top: 50%;
-    width: 12px;
-    height: 2px;
+    width: 10px;
+    height: 1px;
     background: var(--group-line-color, var(--border-color));
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .tab-placeholder {
@@ -678,16 +716,22 @@ body:not(.dark-mode) .moon-icon {
 
 /* Pinned tabs section removed completely */
 
-.bookmarks-section,
 .temporary-tabs {
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.bookmarks-section {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .bookmarks-header {
     display: flex;
     align-items: center;
     gap: 4px;
+    padding: 4px 0;
+    margin-top: 0;
 }
 
 .bookmarks-header h3 {
@@ -747,9 +791,9 @@ body:not(.dark-mode) .moon-icon {
 .bookmarks-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
     position: relative;
-    padding-left: 12px;
+    padding-left: 10px;
     margin-left: 8px;
 }
 
@@ -759,39 +803,40 @@ body:not(.dark-mode) .moon-icon {
     position: absolute;
     left: 8px;
     top: 0;
-    bottom: 8px;
-    width: 2px;
+    bottom: 4px;
+    width: 1px;
     background: #60A5FA;
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .bookmark-folder-container {
-    margin-bottom: 2px;
+    margin-bottom: 0;
 }
 
 .bookmark-item {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
-    margin-bottom: 2px;
-    border-radius: 6px;
+    padding: 2px 4px;
+    margin-bottom: 0;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
     background: transparent;
     position: relative;
-    margin-left: 12px;
+    margin-left: 10px;
+    min-height: 24px;
 }
 
 /* Horizontal connecting line for top-level bookmark items */
 .bookmarks-list > .bookmark-item::before {
     content: '';
     position: absolute;
-    left: -12px;
+    left: -10px;
     top: 50%;
-    width: 12px;
-    height: 2px;
+    width: 10px;
+    height: 1px;
     background: #60A5FA;
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .bookmark-item:hover {
@@ -799,7 +844,7 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .bookmark-folder-content {
-    padding-left: 12px;
+    padding-left: 10px;
     display: none;
     margin-top: 0;
     margin-bottom: 0;
@@ -813,10 +858,10 @@ body:not(.dark-mode) .moon-icon {
     position: absolute;
     left: 8px;
     top: 0;
-    bottom: 8px;
-    width: 2px;
+    bottom: 4px;
+    width: 1px;
     background: var(--group-line-color, var(--border-color));
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .bookmark-folder-content.expanded {
@@ -826,18 +871,18 @@ body:not(.dark-mode) .moon-icon {
 /* Horizontal connecting lines for bookmark items */
 .bookmark-folder-content .bookmark-item {
     position: relative;
-    margin-left: 12px;
+    margin-left: 10px;
 }
 
 .bookmark-folder-content .bookmark-item::before {
     content: '';
     position: absolute;
-    left: -12px;
+    left: -10px;
     top: 50%;
-    width: 12px;
-    height: 2px;
+    width: 10px;
+    height: 1px;
     background: var(--group-line-color, var(--border-color));
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 /* Nested folder support */
@@ -848,7 +893,8 @@ body:not(.dark-mode) .moon-icon {
 .bookmark-favicon {
     width: 16px;
     height: 16px;
-    margin-right: 8px;
+    min-width: 16px;
+    margin-right: 6px;
     flex-shrink: 0;
     border-radius: 2px;
 }
@@ -858,8 +904,9 @@ body:not(.dark-mode) .moon-icon {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--text-primary);
+    line-height: 1.4;
 }
 
 .bookmark-folder {
@@ -892,10 +939,10 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .bookmark-folder-toggle svg {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     stroke: currentColor;
-    transition: transform 0.2s;
+    transition: transform 0.15s;
     transform: rotate(-90deg);
 }
 
@@ -909,9 +956,9 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .bookmark-folder-icon {
-    width: 14px;
-    height: 14px;
-    min-width: 14px;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
     fill: var(--text-secondary);
     opacity: 0.7;
     flex-shrink: 0;
@@ -919,10 +966,11 @@ body:not(.dark-mode) .moon-icon {
 
 .bookmark-folder-title {
     flex: 1;
-    font-size: 13px;
+    font-size: 12.5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.4;
 }
 
 .no-bookmarks-message {
@@ -984,11 +1032,8 @@ body:not(.dark-mode) .moon-icon {
 .tabs-container {
     display: flex;
     flex-direction: column;
-    min-height: 60px;
-    /* border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 8px;
-    margin-top: 8px; */
+    min-height: 0;
+    gap: 0;
 }
 
 .tabs-container.collapsed {
@@ -1099,14 +1144,15 @@ body:not(.dark-mode) .moon-icon {
 .tab {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
-    margin-bottom: 2px;
-    border-radius: 6px;
+    padding: 2px 4px;
+    margin-bottom: 0;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
+    transition: background-color 0.15s;
     background: transparent;
     position: relative;
-    font-weight: 500;
+    font-weight: 400;
+    min-height: 24px;
 }
 
 .tab:hover {
@@ -1121,27 +1167,32 @@ body:not(.dark-mode) .moon-icon {
     width: 16px;
     height: 16px;
     min-width: 16px;
-    margin-right: 8px;
+    margin-right: 6px;
     flex-shrink: 0;
 }
 
 
 .tab-details {
-    flex-grow: 1; /* Allow details to take up space */
-    overflow: hidden; /* Prevent long text overflow */
-    display: flex; /* Use flex for vertical alignment if needed */
-    flex-direction: column; /* Stack title and domain */
-    justify-content: center; /* Center vertically */
-    margin-left: 8px; /* Space from favicon */
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 0;
+    gap: 0;
+    min-width: 0;
 }
 
 .tab-title-display,
 .tab-title-input {
-    white-space: nowrap; /* Prevent wrapping */
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Add ellipsis (...) for overflow */
-    display: block; /* Ensure they take full width */
+    text-overflow: ellipsis;
+    display: block;
     width: 100%;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--text-primary);
 }
 
 .tab-title-input {
@@ -1162,14 +1213,15 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .tab-domain-display {
-    font-size: 0.75em; /* Smaller font size */
-    opacity: 0.8;
+    font-size: 10.5px;
+    color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block; /* Takes its own line */
-    margin-top: 2px; /* Space below title */
-    font-weight: 800;
+    display: block;
+    margin-top: 0;
+    font-weight: 400;
+    line-height: 1.3;
 }
 
 .tab-title {
@@ -1772,9 +1824,9 @@ body:not(.dark-mode) .moon-icon {
     line-height: 1.4;
 }
 
-/* Tree View Styles */
+/* Tree View Styles - Compact Design */
 .tabs-tree-container {
-    margin-top: 8px;
+    margin-top: 4px;
 }
 
 .tabs-tree-container.collapsed {
@@ -1782,15 +1834,15 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .tree-domain-group {
-    margin-bottom: 2px;
-    border-radius: 6px;
+    margin-bottom: 0;
+    border-radius: 4px;
     overflow: visible;
-    transition: all 0.2s ease;
+    transition: none;
     background: transparent;
 }
 
 .tree-domain-group[data-group-id] {
-    margin-bottom: 4px;
+    margin-bottom: 1px;
     padding: 0;
     background: transparent;
 }
@@ -1798,13 +1850,14 @@ body:not(.dark-mode) .moon-icon {
 .tree-domain-header {
     display: flex;
     align-items: center;
-    padding: 4px 8px 4px 4px;
+    padding: 2px 4px 2px 2px;
     background: transparent;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
     user-select: none;
-    border-radius: 6px;
+    border-radius: 4px;
     position: relative;
+    min-height: 24px;
 }
 
 .tree-domain-header:hover {
@@ -1815,7 +1868,7 @@ body:not(.dark-mode) .moon-icon {
     width: 16px;
     height: 16px;
     min-width: 16px;
-    margin-right: 4px;
+    margin-right: 2px;
     color: var(--text-secondary);
     display: flex;
     align-items: center;
@@ -1824,10 +1877,10 @@ body:not(.dark-mode) .moon-icon {
 }
 
 .tree-expand-icon svg {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     stroke: currentColor;
-    transition: transform 0.2s;
+    transition: transform 0.15s;
     transform: rotate(-90deg);
 }
 
@@ -1839,35 +1892,36 @@ body:not(.dark-mode) .moon-icon {
     width: 16px;
     height: 16px;
     min-width: 16px;
-    margin-right: 6px;
+    margin-right: 4px;
     border-radius: 2px;
     flex-shrink: 0;
 }
 
 .tree-domain-name {
     flex: 1;
-    font-weight: 500;
-    font-size: 13px;
+    font-weight: 400;
+    font-size: 12.5px;
     color: var(--text-primary);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.4;
 }
 
 .tree-domain-count {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-secondary);
     background: var(--bg-hover);
-    padding: 2px 6px;
-    border-radius: 10px;
+    padding: 1px 5px;
+    border-radius: 8px;
     font-weight: 500;
-    margin-left: 8px;
+    margin-left: 6px;
     flex-shrink: 0;
 }
 
 .tree-domain-tabs {
-    padding-left: 12px;
+    padding-left: 10px;
     padding-top: 0;
     padding-bottom: 0;
     display: none;
@@ -1885,22 +1939,23 @@ body:not(.dark-mode) .moon-icon {
     position: absolute;
     left: 8px;
     top: 0;
-    bottom: 8px;
-    width: 2px;
+    bottom: 4px;
+    width: 1px;
     background: var(--group-line-color, var(--border-color));
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .tree-tab-item {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
-    margin: 2px 0;
-    margin-left: 12px;
-    border-radius: 6px;
+    padding: 2px 4px;
+    margin: 0;
+    margin-left: 10px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
     position: relative;
+    min-height: 24px;
 }
 
 .tree-tab-item:hover {
@@ -1916,26 +1971,26 @@ body:not(.dark-mode) .moon-icon {
 .tree-tab-item::before {
     content: '';
     position: absolute;
-    left: -12px;
+    left: -10px;
     top: 50%;
-    width: 12px;
-    height: 2px;
+    width: 10px;
+    height: 1px;
     background: var(--group-line-color, var(--border-color));
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 .tree-tab-favicon {
     width: 16px;
     height: 16px;
     min-width: 16px;
-    margin-right: 8px;
+    margin-right: 6px;
     flex-shrink: 0;
     border-radius: 2px;
 }
 
 .tree-tab-title {
     flex: 1;
-    font-size: 13px;
+    font-size: 12.5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2066,10 +2121,10 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
     margin-bottom: 0;
 }
 
-/* List View Tab Groups */
+/* List View Tab Groups - Compact Design */
 .list-tab-group {
-    margin-bottom: 2px;
-    border-radius: 6px;
+    margin-bottom: 0;
+    border-radius: 4px;
     overflow: visible;
     background: transparent;
 }
@@ -2077,12 +2132,13 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 .list-tab-group-header {
     display: flex;
     align-items: center;
-    padding: 4px 8px 4px 4px;
+    padding: 2px 4px 2px 2px;
     background: transparent;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
     position: relative;
-    border-radius: 6px;
+    border-radius: 4px;
+    min-height: 24px;
 }
 
 .list-tab-group-header:hover {
@@ -2093,7 +2149,7 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
     width: 16px;
     height: 16px;
     min-width: 16px;
-    margin-right: 4px;
+    margin-right: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2102,10 +2158,10 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 }
 
 .list-expand-icon svg {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     stroke: currentColor;
-    transition: transform 0.2s;
+    transition: transform 0.15s;
     transform: rotate(-90deg);
 }
 
@@ -2115,29 +2171,30 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 
 .list-tab-group-name {
     flex: 1;
-    font-weight: 500;
-    font-size: 13px;
+    font-weight: 400;
+    font-size: 12.5px;
     color: var(--text-primary);
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.4;
 }
 
 .list-tab-group-count {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-secondary);
     background: var(--bg-hover);
-    padding: 2px 6px;
-    border-radius: 10px;
-    margin-left: 8px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    margin-left: 6px;
     font-weight: 500;
     flex-shrink: 0;
 }
 
 .list-tab-group-tabs {
     display: none;
-    padding-left: 12px;
+    padding-left: 10px;
     padding-top: 0;
     padding-bottom: 0;
     position: relative;
@@ -2150,7 +2207,7 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
     position: absolute;
     left: 8px;
     top: 0;
-    bottom: 8px;
+    bottom: 4px;
     width: 1px;
     background: var(--group-line-color, var(--border-color));
     opacity: 0.6;
@@ -2162,8 +2219,8 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 }
 
 .list-tab-group-tabs .tab {
-    margin-bottom: 2px;
-    margin-left: 12px;
+    margin-bottom: 0;
+    margin-left: 10px;
     position: relative;
 }
 
@@ -2171,9 +2228,9 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 .list-tab-group-tabs .tab::before {
     content: '';
     position: absolute;
-    left: -12px;
+    left: -10px;
     top: 50%;
-    width: 12px;
+    width: 10px;
     height: 1px;
     background: var(--group-line-color, var(--border-color));
     opacity: 0.6;

@@ -1,4 +1,4 @@
-# Amplify: Quick Start Guide
+# Simba: Quick Start Guide
 
 ## 🚀 Installation
 
@@ -11,7 +11,7 @@ cd /Users/narendra.kumar/projects/chrome-extensions/nTabManager
 2. Enable "Developer mode" (top-right toggle)
 3. Click "Load unpacked"
 4. Select the project folder
-5. The extension should now appear with the Amplify icon
+5. The extension should now appear with the Simba icon
 
 ### 2. Grant Permissions (Optional)
 If you want Google Calendar and Drive integration:
@@ -21,9 +21,9 @@ If you want Google Calendar and Drive integration:
 ## 🎯 First Steps
 
 ### Open the Side Panel
-- **Method 1**: Click the Amplify icon in the Chrome toolbar
+- **Method 1**: Click the Simba icon in the Chrome toolbar
 - **Method 2**: Press `Ctrl+E` (Windows/Linux) or `Cmd+E` (Mac)
-- **Method 3**: Right-click anywhere → "Amplify"
+- **Method 3**: Right-click anywhere → "Simba"
 
 ### Tour the Interface
 1. **Header**: Extension name with theme toggle and controls
@@ -36,7 +36,7 @@ If you want Google Calendar and Drive integration:
 
 ## 🌙 Enable Dark Mode
 
-1. Open the Amplify side panel
+1. Open the Simba side panel
 2. Look for the sun icon (☀️) in the top-right header
 3. Click it to toggle dark mode
 4. The moon icon (🌙) will appear when dark mode is active
@@ -89,7 +89,7 @@ If you want Google Calendar and Drive integration:
 - Works in the background
 
 ### Manual Scan
-1. Right-click the Amplify icon → Click to open popup
+1. Right-click the Simba icon → Click to open popup
 2. Click "Scan for Duplicates"
 3. Review the found duplicates
 4. Click "Close All Duplicates" or close specific groups
@@ -109,7 +109,7 @@ If you want Google Calendar and Drive integration:
 
 ## ⚙️ Auto-Archive Setup
 
-1. Right-click the Amplify icon
+1. Right-click the Simba icon
 2. Select "Options"
 3. Enable "Auto-archive tabs"
 4. Set idle time (e.g., 30 minutes)
@@ -199,7 +199,7 @@ If you want Google Calendar and Drive integration:
 ## 📚 More Resources
 
 - **Full Documentation**: See `README.md`
-- **Feature Details**: See `AMPLIFY-FEATURES.md`
+- **Feature Details**: See `SIMBA-FEATURES.md`
 - **Version History**: See `CHANGELOG.md`
 - **Privacy Policy**: See `privacy-policy.md`
 
@@ -214,7 +214,7 @@ Found a bug or have a suggestion?
    - Expected vs actual behavior
    - Screenshots if applicable
 
-## 🌟 Enjoy Amplify!
+## 🌟 Enjoy Simba!
 
 You're now ready to manage your tabs like a pro! Start simple, then gradually explore advanced features as you get comfortable.
 

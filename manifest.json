@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Amplify: Smart Tab Management",
+  "name": "Simba: One Extension to rule them all",
   "version": "1.1.1",
   "description": "Advanced tab manager with Arc-like vertical spaces and intelligent duplicate detection",
   "author": "Your Name",
@@ -22,13 +22,13 @@
     "default_path": "sidebar.html"
   },
   "action": {
-    "default_title": "Amplify - Smart Tab Manager",
+    "default_title": "Simba - One Extension to rule them all",
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icons/icon-16.png",
-      "32": "icons/icon-32.png",
-      "48": "icons/icon-48.png",
-      "128": "icons/icon-128.png"
+      "16": "assets/simba-16.png",
+      "32": "assets/simba-32.png",
+      "48": "assets/simba-48.png",
+      "128": "assets/simba-128.png"
     }
   },
   "background": {
@@ -39,8 +39,7 @@
     {
       "resources": [
         "sidebar.js",
-        "amplify-features.js",
-        "icons/*",
+        "simba-features.js",
         "assets/*",
         "_favicon/*"
       ],
@@ -53,10 +52,10 @@
     }
   ],
   "icons": {
-    "16": "icons/icon-16.png",
-    "32": "icons/icon-32.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"
+    "16": "assets/simba-16.png",
+    "32": "assets/simba-32.png",
+    "48": "assets/simba-48.png",
+    "128": "assets/simba-128.png"
   },
   "commands": {
     "_execute_action": {

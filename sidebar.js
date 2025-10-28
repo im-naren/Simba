@@ -241,7 +241,10 @@ function setupGlobalSearch() {
     const searchInput = document.getElementById('globalSearch');
     const searchClear = document.getElementById('searchClear');
     
-    if (!searchInput || !searchClear) return;
+    if (!searchInput || !searchClear) {
+        console.error('❌ Search elements not found!');
+        return;
+    }
     
     let searchTimeout = null;
     
@@ -277,14 +280,34 @@ function setupGlobalSearch() {
         }
     });
     
-    // Global keyboard shortcut to focus search (Cmd+F / Ctrl+F)
+    // Global keyboard shortcuts to focus search
+    const focusSearch = () => {
+        requestAnimationFrame(() => {
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+                console.log('✅ Search focused via Cmd+K');
+            }
+        });
+    };
+    
     document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        // Cmd+K or Ctrl+K (primary shortcut)
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
             e.preventDefault();
-            searchInput.focus();
-            searchInput.select();
+            e.stopPropagation();
+            focusSearch();
+            return false;
         }
-    });
+        
+        // Cmd+F or Ctrl+F (alternative shortcut)  
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            e.stopPropagation();
+            focusSearch();
+            return false;
+        }
+    }, { capture: true });
 }
 
 function performSearch(query) {
@@ -1064,8 +1087,9 @@ async function renderTreeView(spaceId) {
         console.log('Space found:', !!space, 'Space:', space);
         if (!space) return;
         
-        const tabs = await chrome.tabs.query({ groupId: spaceId });
-        console.log('All tabs in group:', tabs.length);
+        // Get all tabs in the current window (not by groupId since we're in unified view)
+        const tabs = await chrome.tabs.query({ currentWindow: true });
+        console.log('All tabs in window:', tabs.length);
         
         const temporaryTabs = tabs.filter(tab => space.temporaryTabs.includes(tab.id));
         console.log('Temporary tabs:', temporaryTabs.length, temporaryTabs.map(t => ({ id: t.id, title: t.title })));
@@ -1144,7 +1168,13 @@ async function renderBookmarksTreeView(spaceId) {
         const domainGroups = {};
         
         for (const bookmark of allBookmarks) {
-            const domain = Utils.getDomain(bookmark.url);
+            let domain = 'Unknown';
+            try {
+                const url = new URL(bookmark.url);
+                domain = url.hostname || 'Unknown';
+            } catch (error) {
+                domain = 'Unknown';
+            }
             const favicon = Utils.getFaviconUrl(bookmark.url);
             
             if (!domainGroups[domain]) {
@@ -1578,7 +1608,8 @@ async function createListTabGroupElement(group, spaceId) {
     return groupDiv;
 }
 
-async function toggleTreeView(spaceId) {
+// Export toggleTreeView to window so it can be called from toolbar
+window.toggleTreeView = async function toggleTreeView(spaceId) {
     console.log('toggleTreeView called for space:', spaceId);
     
     const spaceElement = document.querySelector(`[data-space-id="${spaceId}"]`);
@@ -1595,13 +1626,13 @@ async function toggleTreeView(spaceId) {
     
     console.log('Elements found:', { tempListContainer, tempTreeContainer, bookmarksListContainer, bookmarksTreeContainer, viewModeBtn });
     
-    if (!tempListContainer || !tempTreeContainer || !viewModeBtn) {
+    if (!tempListContainer || !tempTreeContainer) {
         console.error('Missing required elements');
         return;
     }
     
-    const listIcon = viewModeBtn.querySelector('.list-icon');
-    const treeIcon = viewModeBtn.querySelector('.tree-icon');
+    const listIcon = viewModeBtn?.querySelector('.list-icon');
+    const treeIcon = viewModeBtn?.querySelector('.tree-icon');
     
     if (tempListContainer.style.display === 'none') {
         // Switch to list view for all sections

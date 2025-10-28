@@ -1,4 +1,4 @@
-# Amplify v2.0 - Chrome Web Store Description
+# Simba v2.0 - Chrome Web Store Description
 
 ## Short Description (132 chars max)
 Advanced tab management with vertical sidebar. Real-time duplicate detection, smart organization, position anywhere.
@@ -7,7 +7,7 @@ Advanced tab management with vertical sidebar. Real-time duplicate detection, sm
 
 **The Ultimate Tab Management Solution for Power Users!**
 
-Amplify v2.0 transforms your browsing experience with a powerful vertical tabs sidebar that can be positioned anywhere on your screen (left, right, top, or bottom). Combine this with intelligent real-time duplicate detection and you have the most advanced tab manager available.
+Simba v2.0 transforms your browsing experience with a powerful vertical tabs sidebar that can be positioned anywhere on your screen (left, right, top, or bottom). Combine this with intelligent real-time duplicate detection and you have the most advanced tab manager available.
 
 ## ✨ Revolutionary Features
 
@@ -86,9 +86,9 @@ Amplify v2.0 transforms your browsing experience with a powerful vertical tabs s
 - Smart URL normalization (treats google.com and google.com/ as duplicates)
 - Respects Chrome internal pages (won't close settings, extensions, etc.)
 
-## ⭐ Why Choose Amplify?
+## ⭐ Why Choose Simba?
 
-Unlike other tab managers that require manual action, Amplify works completely automatically. Set it and forget it - your browser stays organized without any effort from you!
+Unlike other tab managers that require manual action, Simba works completely automatically. Set it and forget it - your browser stays organized without any effort from you!
 
 **Try it free today and experience the cleanest browsing you've ever had!**
 

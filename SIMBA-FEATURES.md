@@ -1,4 +1,4 @@
-# Amplify: New Features
+# Simba: New Features
 
 ## 🌙 Dark Mode
 - **Toggle Button**: Click the sun/moon icon in the top-right corner of the sidebar
@@ -7,7 +7,7 @@
 - **System-Aware**: Automatically detects your system's color scheme preference
 
 ### How to Use:
-1. Open the Amplify side panel (click the extension icon or press `Ctrl+E` / `Cmd+E` on Mac)
+1. Open the Simba side panel (click the extension icon or press `Ctrl+E` / `Cmd+E` on Mac)
 2. Click the theme toggle button (sun/moon icon) in the header
 3. Your preference will be saved for future sessions
 
@@ -18,7 +18,7 @@
 - **Live Updates**: Tree view automatically updates when tabs change
 
 ### How to Use:
-1. Open the Amplify side panel
+1. Open the Simba side panel
 2. Navigate to any Space (e.g., "Home")
 3. In the "Tabs" section, click the view mode button (list/tree icon)
 4. Tabs will be grouped by their domain (e.g., youtube.com, github.com)

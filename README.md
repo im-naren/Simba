@@ -1,4 +1,4 @@
-# Amplify: Smart Tab Management
+# Simba: Smart Tab Management
 
 <div align="center">
   <h3>🚀 Advanced Chrome extension combining Arc-style vertical spaces with intelligent duplicate detection</h3>
@@ -55,7 +55,7 @@
 3. Enable **Developer mode** (toggle in top right)
 4. Click **Load unpacked**
 5. Select the project folder
-6. Click the Amplify extension icon to open the side panel
+6. Click the Simba extension icon to open the side panel
 
 ### Method 2: Chrome Web Store (Coming Soon)
 
@@ -66,7 +66,7 @@ The extension will soon be available on the Chrome Web Store for one-click insta
 ### Side Panel (Main Interface)
 
 **Opening the Sidebar:**
-- Click the Amplify icon in Chrome toolbar, OR
+- Click the Simba icon in Chrome toolbar, OR
 - Press `Ctrl+E` (Windows/Linux) or `Cmd+E` (Mac)
 
 **Managing Spaces:**
@@ -101,7 +101,7 @@ The extension will soon be available on the Chrome Web Store for one-click insta
 ### Duplicate Detection (Popup)
 
 **Opening the Popup:**
-- Right-click the Amplify icon and select "Open Popup", OR
+- Right-click the Simba icon and select "Open Popup", OR
 - Click the extension icon if you've configured it to show popup
 
 **Using Duplicate Detection:**
@@ -139,7 +139,7 @@ The duplicate detection runs automatically in the background. You can:
 ### File Structure
 
 ```
-amplify/
+simba/
 ├── manifest.json              # Extension configuration
 ├── background.js              # Service worker (duplicate detection + auto-archive)
 ├── sidebar.html               # Main sidebar interface
@@ -175,8 +175,8 @@ Contributions are welcome! Here's how you can help:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/amplify.git
-cd amplify
+git clone https://github.com/yourusername/simba.git
+cd simba
 
 # Load in Chrome
 # 1. Go to chrome://extensions/
@@ -221,7 +221,7 @@ This project is open source. Feel free to use, modify, and distribute.
 
 If you encounter issues or have questions:
 
-1. Check the [Issues](https://github.com/yourusername/amplify/issues) page
+1. Check the [Issues](https://github.com/yourusername/simba/issues) page
 2. Create a new issue with detailed information
 3. Join our community discussions
 

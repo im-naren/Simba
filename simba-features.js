@@ -1,7 +1,7 @@
-// Amplify Features: Dark Mode and Tree View
+// Simba Features: Dark Mode and Tree View
 // This module adds dark mode toggle and tree view functionality
 
-class AmplifyFeatures {
+class SimbaFeatures {
     constructor() {
         this.isDarkMode = false;
         this.isTreeView = false;
@@ -51,6 +51,33 @@ class AmplifyFeatures {
         const viewModeBtn = document.getElementById('viewModeBtn');
         if (viewModeBtn) {
             viewModeBtn.addEventListener('click', () => this.toggleViewMode());
+        }
+
+        // Expand All button
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        if (expandAllBtn) {
+            expandAllBtn.addEventListener('click', () => this.expandAll());
+        }
+
+        // Collapse All button
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        if (collapseAllBtn) {
+            collapseAllBtn.addEventListener('click', () => this.collapseAll());
+        }
+
+        // Tree View Toggle button
+        const treeViewToggle = document.getElementById('treeViewToggle');
+        if (treeViewToggle) {
+            treeViewToggle.addEventListener('click', async () => {
+                // Get the active space ID from the global context
+                const activeSpace = document.querySelector('.space[style*="display: block"]');
+                if (activeSpace) {
+                    const spaceId = activeSpace.dataset.spaceId;
+                    if (spaceId && window.toggleTreeView) {
+                        await window.toggleTreeView(spaceId);
+                    }
+                }
+            });
         }
     }
 
@@ -297,21 +324,47 @@ class AmplifyFeatures {
             this.renderTreeView();
         }
     }
+
+    expandAll() {
+        console.log('Expanding all sections...');
+        
+        // Expand all sections, folders, and tree groups
+        const allToggles = document.querySelectorAll('.section-toggle.collapsed, .folder-toggle.collapsed, .tree-expand-icon:not(.expanded), .list-expand-icon:not(.expanded), .bookmark-folder-toggle.collapsed');
+        
+        allToggles.forEach(toggle => {
+            toggle.click();
+        });
+        
+        console.log('✅ All sections expanded');
+    }
+
+    collapseAll() {
+        console.log('Collapsing all sections...');
+        
+        // Collapse all sections, folders, and tree groups (except the ones that should stay open)
+        const allToggles = document.querySelectorAll('.section-toggle:not(.collapsed), .folder-toggle:not(.collapsed), .tree-expand-icon.expanded, .list-expand-icon.expanded, .bookmark-folder-toggle:not(.collapsed)');
+        
+        allToggles.forEach(toggle => {
+            toggle.click();
+        });
+        
+        console.log('✅ All sections collapsed');
+    }
 }
 
 // Export for use in sidebar.js
-window.amplifyFeatures = new AmplifyFeatures();
+window.simbaFeatures = new SimbaFeatures();
 
 // Listen for tab updates to refresh tree view
 chrome.tabs.onUpdated.addListener(() => {
-    if (window.amplifyFeatures && window.amplifyFeatures.isTreeView) {
-        setTimeout(() => window.amplifyFeatures.refreshTreeView(), 500);
+    if (window.simbaFeatures && window.simbaFeatures.isTreeView) {
+        setTimeout(() => window.simbaFeatures.refreshTreeView(), 500);
     }
 });
 
 chrome.tabs.onRemoved.addListener(() => {
-    if (window.amplifyFeatures && window.amplifyFeatures.isTreeView) {
-        setTimeout(() => window.amplifyFeatures.refreshTreeView(), 500);
+    if (window.simbaFeatures && window.simbaFeatures.isTreeView) {
+        setTimeout(() => window.simbaFeatures.refreshTreeView(), 500);
     }
 });
 

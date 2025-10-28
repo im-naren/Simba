@@ -6,7 +6,7 @@ The error you're seeing is from Chrome's cache of the old version. Follow these 
 
 1. **Go to** `chrome://extensions/`
 
-2. **Find** "Amplify: Smart Tab Management"
+2. **Find** "Simba: Smart Tab Management"
 
 3. **Click the RELOAD button** (circular arrow icon)
 

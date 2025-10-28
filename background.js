@@ -317,14 +317,14 @@ chrome.sidePanel.setPanelBehavior({
 
 // Extension installation
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('🚀 Amplify extension installed and ready!');
+  console.log('🚀 Simba extension installed and ready!');
   
   setupAutoArchiveAlarm();
   
   if (chrome.contextMenus) {
     chrome.contextMenus.create({
-      id: "openAmplify",
-      title: "Amplify",
+      id: "openSimba",
+      title: "Simba",
       contexts: ["all"]
     });
   }
@@ -339,7 +339,7 @@ chrome.runtime.onStartup.addListener(() => {
 // Handle context menu clicks
 if (chrome.contextMenus) {
   chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === "openAmplify") {
+    if (info.menuItemId === "openSimba") {
       chrome.sidePanel.open({ windowId: tab.windowId });
     }
   });
@@ -508,4 +508,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true; // Keep message channel open for async responses
 });
 
-console.log('✨ Amplify: Smart Tab Manager initialized with duplicate detection, auto-archive, and search!');
+console.log('✨ Simba: One Extension to rule them all - initialized with duplicate detection, auto-archive, and search!');

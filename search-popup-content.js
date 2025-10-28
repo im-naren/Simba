@@ -1,5 +1,5 @@
 // Search Popup Content Script
-class AmplifySearchPopup {
+class SimbaSearchPopup {
   constructor() {
     this.overlay = null;
     this.searchInput = null;
@@ -103,41 +103,41 @@ class AmplifySearchPopup {
   render() {
     // Create overlay
     this.overlay = document.createElement('div');
-    this.overlay.className = 'amplify-search-overlay';
+    this.overlay.className = 'simba-search-overlay';
     
     // Create container
     const container = document.createElement('div');
-    container.className = 'amplify-search-container';
+    container.className = 'simba-search-container';
 
     // Create search input section
     const inputContainer = document.createElement('div');
-    inputContainer.className = 'amplify-search-input-container';
+    inputContainer.className = 'simba-search-input-container';
     inputContainer.innerHTML = `
-      <svg class="amplify-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="simba-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
       </svg>
-      <input type="text" class="amplify-search-input" placeholder="Search tabs and bookmarks..." autocomplete="off" spellcheck="false">
+      <input type="text" class="simba-search-input" placeholder="Search tabs and bookmarks..." autocomplete="off" spellcheck="false">
     `;
 
     // Create results container
     this.resultsContainer = document.createElement('div');
-    this.resultsContainer.className = 'amplify-search-results';
+    this.resultsContainer.className = 'simba-search-results';
 
     // Create footer
     const footer = document.createElement('div');
-    footer.className = 'amplify-search-footer';
+    footer.className = 'simba-search-footer';
     footer.innerHTML = `
-      <div class="amplify-search-hints">
-        <div class="amplify-search-hint">
-          <span class="amplify-search-key">↑↓</span>
+      <div class="simba-search-hints">
+        <div class="simba-search-hint">
+          <span class="simba-search-key">↑↓</span>
           <span>Navigate</span>
         </div>
-        <div class="amplify-search-hint">
-          <span class="amplify-search-key">↵</span>
+        <div class="simba-search-hint">
+          <span class="simba-search-key">↵</span>
           <span>Open</span>
         </div>
-        <div class="amplify-search-hint">
-          <span class="amplify-search-key">Esc</span>
+        <div class="simba-search-hint">
+          <span class="simba-search-key">Esc</span>
           <span>Close</span>
         </div>
       </div>
@@ -151,7 +151,7 @@ class AmplifySearchPopup {
     document.body.appendChild(this.overlay);
 
     // Get references
-    this.searchInput = inputContainer.querySelector('.amplify-search-input');
+    this.searchInput = inputContainer.querySelector('.simba-search-input');
 
     // Render initial results
     this.renderResults();
@@ -196,11 +196,11 @@ class AmplifySearchPopup {
   renderResults() {
     if (this.filteredItems.length === 0) {
       this.resultsContainer.innerHTML = `
-        <div class="amplify-search-empty">
-          <svg class="amplify-search-empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="simba-search-empty">
+          <svg class="simba-search-empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <div class="amplify-search-empty-text">No results found</div>
+          <div class="simba-search-empty-text">No results found</div>
         </div>
       `;
       return;
@@ -210,18 +210,18 @@ class AmplifySearchPopup {
     
     this.filteredItems.forEach((item, index) => {
       const resultItem = document.createElement('div');
-      resultItem.className = 'amplify-search-result-item';
+      resultItem.className = 'simba-search-result-item';
       if (index === this.selectedIndex) {
         resultItem.classList.add('selected');
       }
 
       resultItem.innerHTML = `
-        <img class="amplify-result-favicon" src="${item.favicon}" onerror="this.src='data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%236b7280&quot; stroke-width=&quot;2&quot;><path d=&quot;M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5&quot;/></svg>'">
-        <div class="amplify-result-content">
-          <div class="amplify-result-title">${this.escapeHtml(item.title)}</div>
-          <div class="amplify-result-url">${this.escapeHtml(item.url)}</div>
+        <img class="simba-result-favicon" src="${item.favicon}" onerror="this.src='data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%236b7280&quot; stroke-width=&quot;2&quot;><path d=&quot;M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5&quot;/></svg>'">
+        <div class="simba-result-content">
+          <div class="simba-result-title">${this.escapeHtml(item.title)}</div>
+          <div class="simba-result-url">${this.escapeHtml(item.url)}</div>
         </div>
-        <span class="amplify-result-badge ${item.type}">${item.type === 'tab' ? 'Tab' : 'Bookmark'}</span>
+        <span class="simba-result-badge ${item.type}">${item.type === 'tab' ? 'Tab' : 'Bookmark'}</span>
       `;
 
       resultItem.addEventListener('click', () => {
@@ -266,7 +266,7 @@ class AmplifySearchPopup {
   }
 
   updateSelection() {
-    const items = this.resultsContainer.querySelectorAll('.amplify-search-result-item');
+    const items = this.resultsContainer.querySelectorAll('.simba-search-result-item');
     items.forEach((item, index) => {
       if (index === this.selectedIndex) {
         item.classList.add('selected');
@@ -306,6 +306,6 @@ class AmplifySearchPopup {
 }
 
 // Initialize the search popup
-const searchPopup = new AmplifySearchPopup();
+const searchPopup = new SimbaSearchPopup();
 searchPopup.initialize();
 
