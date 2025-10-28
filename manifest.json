@@ -1,47 +1,92 @@
 {
   "manifest_version": 3,
-  "name": "nTabManager",
-  "version": "2.0.0",
-  "description": "Beautiful new tab page with today's calendar, recent Google Workspace files, and real-time duplicate tab detection. Replaces your new tab with a productivity dashboard.",
+  "name": "Amplify: Smart Tab Management",
+  "version": "1.1.1",
+  "description": "Advanced tab manager with Arc-like vertical spaces and intelligent duplicate detection",
   "author": "Your Name",
   "permissions": [
     "tabs",
-    "storage", 
-    "identity",
+    "tabGroups",
+    "sidePanel",
+    "storage",
+    "bookmarks",
+    "alarms",
+    "commands",
+    "favicon",
     "history"
   ],
   "host_permissions": [
-    "<all_urls>",
-    "https://www.googleapis.com/*"
+    "<all_urls>"
   ],
-  "oauth2": {
-    "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/calendar.readonly",
-      "https://www.googleapis.com/auth/drive.readonly"
-    ]
+  "side_panel": {
+    "default_path": "sidebar.html"
   },
   "action": {
-    "default_title": "nTabManager - Duplicate Tab Detection",
+    "default_title": "Amplify - Smart Tab Manager",
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon-16.png",
-      "32": "icon-32.png",
-      "48": "icon-48.png",
-      "128": "icon-128.png"
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
-  "chrome_url_overrides": {
-    "newtab": "newtab.html"
-  },
-
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sidebar.js",
+        "amplify-features.js",
+        "icons/*",
+        "assets/*",
+        "_favicon/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "extension_ids": [
+        "*"
+      ]
+    }
+  ],
   "icons": {
-    "16": "icon-16.png",
-    "32": "icon-32.png",
-    "48": "icon-48.png",
-    "128": "icon-128.png"
-  }
-} 
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+E",
+        "mac": "Command+E"
+      },
+      "description": "Toggle side panel"
+    },
+    "quickPinToggle": {
+      "suggested_key": {
+        "default": "Ctrl+D",
+        "mac": "Command+D"
+      },
+      "description": "Quick Pin/Unpin Tab"
+    },
+    "openSearch": {
+      "suggested_key": {
+        "default": "Ctrl+K",
+        "mac": "Command+K"
+      },
+      "description": "Open search popup"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["search-popup-content.js"],
+      "css": ["search-popup.css"],
+      "run_at": "document_end"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-// Popup script for nTabManager Extension
+// Popup script for Duplicate Tab Detection
 
 class DuplicateTabUI {
   constructor() {
