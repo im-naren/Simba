@@ -33,6 +33,13 @@
     --text-muted: rgba(0, 0, 0, 0.5);
     --border-color: rgba(0, 0, 0, 0.1);
     --shadow-color: rgba(0, 0, 0, 0.1);
+    
+    /* Customizable sizing */
+    --icon-size: 16px;
+    --text-size: 12.5px;
+    --item-padding-vertical: 2px;
+    --item-padding-horizontal: 4px;
+    --item-gap: 0px;
 }
 
 body.dark-mode {
@@ -206,7 +213,7 @@ h3 {
     position: fixed;
     top: 56px;
     right: 12px;
-    width: 220px;
+    width: 240px;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 10px;
@@ -216,6 +223,8 @@ h3 {
     transform: translateY(-10px);
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .settings-panel.visible {
@@ -398,6 +407,68 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     flex-shrink: 0;
 }
 
+/* Settings slider items */
+.settings-slider-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    gap: 6px;
+}
+
+.settings-slider-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-hover);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.settings-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.settings-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.settings-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+.settings-slider-value {
+    font-size: 11px;
+    color: var(--text-secondary);
+    min-width: 45px;
+    text-align: right;
+    font-weight: 500;
+}
+
 /* Header Toolbar */
 .header-toolbar {
     display: flex;
@@ -426,6 +497,12 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 
 .toolbar-btn:hover {
     background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    opacity: 1;
+}
+
+.toolbar-btn.active {
+    background: rgba(255, 255, 255, 0.12);
     color: var(--text-primary);
     opacity: 1;
 }
@@ -492,7 +569,152 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     padding-right: 8px;
 }
 
-/* Pinned favicons removed */
+/* Favorites Section */
+.favorites-section {
+    margin: 8px 12px 12px 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.favorites-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    margin-bottom: 8px;
+}
+
+.favorites-header h3 {
+    margin-left: 0;
+    margin-bottom: 0;
+}
+
+.favorites-content {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    opacity: 1;
+}
+
+.favorites-content.collapsed {
+    max-height: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    opacity: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.favorites-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+    gap: 8px;
+    padding: 4px;
+}
+
+.favorite-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: 1px solid transparent;
+    aspect-ratio: 1;
+    min-height: 24px;
+}
+
+.favorite-item:hover {
+    background: var(--bg-hover);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.favorite-item.active {
+    background: var(--bg-active);
+    border-color: var(--text-primary);
+    box-shadow: 0 2px 6px var(--shadow-color);
+}
+
+.favorite-favicon {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
+    flex-shrink: 0;
+    border-radius: 3px;
+    object-fit: contain;
+}
+
+.favorite-title {
+    display: none;
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.favorite-item:hover .favorite-title {
+    display: block;
+}
+
+.favorite-remove {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border: none;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    opacity: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.favorite-item:hover .favorite-remove {
+    opacity: 1;
+}
+
+.favorite-remove:hover {
+    background: #ff4444;
+    color: white;
+    transform: scale(1.15);
+}
+
+.favorite-remove svg {
+    width: 8px;
+    height: 8px;
+    stroke: currentColor;
+    stroke-width: 3;
+}
+
+.no-favorites-message {
+    grid-column: 1 / -1;
+    padding: 20px 12px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-style: italic;
+}
 
 .spaces-list {
     padding-top: 0;
@@ -736,7 +958,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: 500;
-    font-size: 13px;
+    font-size: var(--text-size);
 }
 
 .folder-title.hidden {
@@ -746,13 +968,13 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 .folder-header {
     display: flex;
     align-items: center;
-    padding: 2px 4px 2px 2px;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal) var(--item-padding-vertical) 2px;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.15s;
     user-select: none;
     position: relative;
-    min-height: 24px;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
 }
 
 .folder-header:hover {
@@ -760,9 +982,9 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .folder-icon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
     margin-right: 6px;
     margin-left: 2px;
     fill: var(--text-secondary);
@@ -782,7 +1004,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     flex: 1;
     background: none;
     border: none;
-    font-size: 13px;
+    font-size: var(--text-size);
     color: var(--text-primary);
     padding: 2px 4px;
     border-radius: 4px;
@@ -1013,15 +1235,15 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 .bookmark-item {
     display: flex;
     align-items: center;
-    padding: 2px 4px;
-    margin-bottom: 0;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal);
+    margin-bottom: var(--item-gap);
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.15s;
     background: transparent;
     position: relative;
     margin-left: 10px;
-    min-height: 24px;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
 }
 
 /* Horizontal connecting line for top-level bookmark items */
@@ -1088,9 +1310,9 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .bookmark-favicon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
     margin-right: 6px;
     flex-shrink: 0;
     border-radius: 2px;
@@ -1101,7 +1323,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 12.5px;
+    font-size: var(--text-size);
     color: var(--text-primary);
     line-height: 1.4;
 }
@@ -1153,9 +1375,9 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .bookmark-folder-icon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
     fill: var(--text-secondary);
     opacity: 0.7;
     flex-shrink: 0;
@@ -1163,7 +1385,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 
 .bookmark-folder-title {
     flex: 1;
-    font-size: 12.5px;
+    font-size: var(--text-size);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1341,15 +1563,15 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 .tab {
     display: flex;
     align-items: center;
-    padding: 2px 4px;
-    margin-bottom: 0;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal);
+    margin-bottom: var(--item-gap);
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.15s;
     background: transparent;
     position: relative;
     font-weight: 400;
-    min-height: 24px;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
 }
 
 .tab:hover {
@@ -1361,9 +1583,9 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .tab-favicon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
     margin-right: 6px;
     flex-shrink: 0;
 }
@@ -1387,7 +1609,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     text-overflow: ellipsis;
     display: block;
     width: 100%;
-    font-size: 12.5px;
+    font-size: var(--text-size);
     line-height: 1.4;
     color: var(--text-primary);
 }
@@ -2047,14 +2269,14 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 .tree-domain-header {
     display: flex;
     align-items: center;
-    padding: 2px 4px 2px 2px;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal) var(--item-padding-vertical) 2px;
     background: transparent;
     cursor: pointer;
     transition: background-color 0.15s;
     user-select: none;
     border-radius: 4px;
     position: relative;
-    min-height: 24px;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
 }
 
 .tree-domain-header:hover {
@@ -2086,9 +2308,9 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .tree-domain-icon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
     margin-right: 4px;
     border-radius: 2px;
     flex-shrink: 0;
@@ -2097,7 +2319,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 .tree-domain-name {
     flex: 1;
     font-weight: 400;
-    font-size: 12.5px;
+    font-size: var(--text-size);
     color: var(--text-primary);
     min-width: 0;
     overflow: hidden;
@@ -2145,14 +2367,15 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 .tree-tab-item {
     display: flex;
     align-items: center;
-    padding: 2px 4px;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal);
     margin: 0;
+    margin-bottom: var(--item-gap);
     margin-left: 10px;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.15s;
     position: relative;
-    min-height: 24px;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
 }
 
 .tree-tab-item:hover {
@@ -2177,9 +2400,9 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .tree-tab-favicon {
-    width: 16px;
-    height: 16px;
-    min-width: 16px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    min-width: var(--icon-size);
     margin-right: 6px;
     flex-shrink: 0;
     border-radius: 2px;
@@ -2187,7 +2410,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 
 .tree-tab-title {
     flex: 1;
-    font-size: 12.5px;
+    font-size: var(--text-size);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2222,14 +2445,126 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     color: var(--text-primary);
 }
 
+/* 2-Level Hierarchy Styles */
+.tree-subgroups-container {
+    padding-left: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+    display: none;
+    position: relative;
+    margin-left: 8px;
+}
+
+.tree-subgroups-container.expanded {
+    display: block;
+}
+
+.tree-subgroups-container::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 4px;
+    width: 1px;
+    background: var(--border-color);
+    opacity: 0.4;
+}
+
+.tree-subgroup {
+    margin-bottom: 2px;
+}
+
+.tree-subgroup-header {
+    display: flex;
+    align-items: center;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal) var(--item-padding-vertical) 2px;
+    margin-left: 10px;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    user-select: none;
+    border-radius: 4px;
+    position: relative;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
+}
+
+.tree-subgroup-header:hover {
+    background: var(--bg-hover);
+}
+
+.tree-subgroup-icon {
+    width: calc(var(--icon-size) * 0.85);
+    height: calc(var(--icon-size) * 0.85);
+    min-width: calc(var(--icon-size) * 0.85);
+    margin-right: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.tree-subgroup-name {
+    flex: 1;
+    font-weight: 400;
+    font-size: calc(var(--text-size) * 0.95);
+    color: var(--text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+.tree-subgroup-count {
+    font-size: 9px;
+    color: var(--text-secondary);
+    background: var(--bg-hover);
+    padding: 1px 4px;
+    border-radius: 6px;
+    font-weight: 500;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+.tree-subgroup-tabs {
+    padding-left: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+    display: none;
+    position: relative;
+    margin-left: 18px;
+}
+
+.tree-subgroup-tabs.expanded {
+    display: block;
+}
+
+.tree-subgroup-tabs::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 4px;
+    width: 1px;
+    background: var(--group-line-color, var(--border-color));
+    opacity: 0.4;
+}
+
+/* Adjust tab items in subgroups to have less indentation */
+.tree-subgroup-tabs .tree-tab-item {
+    margin-left: 10px;
+}
+
 /* Dark mode adjustments for tree view */
 body.dark-mode .tree-domain-tabs::before,
 body.dark-mode .tree-tab-item::before,
 body.dark-mode .folder-content::before,
 body.dark-mode .folder-content > .tab::before,
 body.dark-mode .list-tab-group-tabs::before,
-body.dark-mode .list-tab-group-tabs > .tab::before {
-    opacity: 0.4;
+body.dark-mode .list-tab-group-tabs > .tab::before,
+body.dark-mode .tree-subgroups-container::before,
+body.dark-mode .tree-subgroup-tabs::before {
+    opacity: 0.3;
 }
 
 /* Unified Tabs Section */
@@ -2329,13 +2664,13 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 .list-tab-group-header {
     display: flex;
     align-items: center;
-    padding: 2px 4px 2px 2px;
+    padding: var(--item-padding-vertical) var(--item-padding-horizontal) var(--item-padding-vertical) 2px;
     background: transparent;
     cursor: pointer;
     transition: background-color 0.15s;
     position: relative;
     border-radius: 4px;
-    min-height: 24px;
+    min-height: calc(var(--icon-size) + var(--item-padding-vertical) * 2);
 }
 
 .list-tab-group-header:hover {
@@ -2369,7 +2704,7 @@ body.dark-mode .list-tab-group-tabs > .tab::before {
 .list-tab-group-name {
     flex: 1;
     font-weight: 400;
-    font-size: 12.5px;
+    font-size: var(--text-size);
     color: var(--text-primary);
     min-width: 0;
     overflow: hidden;

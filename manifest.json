@@ -58,12 +58,19 @@
     "128": "assets/simba-128.png"
   },
   "commands": {
-    "_execute_action": {
+    "toggleSidebarFullscreen": {
       "suggested_key": {
         "default": "Ctrl+E",
         "mac": "Command+E"
       },
-      "description": "Toggle side panel"
+      "description": "Toggle fullscreen and sidebar together"
+    },
+    "toggleSidebarOnly": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
+      },
+      "description": "Toggle sidebar only"
     },
     "quickPinToggle": {
       "suggested_key": {

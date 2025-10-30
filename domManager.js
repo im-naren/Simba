@@ -184,7 +184,102 @@ export function showTabContextMenu(x, y, tab, isPinned, isBookmarkOnly, tabEleme
 
     // Only show these options for actual tabs that are part of a space
     if (!isBookmarkOnly) {
-        // Add to Favorites option removed - favorites section removed
+        // Add/Remove from Favorites option
+        const favoritesOption = document.createElement('div');
+        favoritesOption.className = 'context-menu-item';
+        
+        // Check if tab is already in favorites (using consistent async/await)
+        const checkFavorites = async () => {
+            try {
+                const result = await chrome.storage.local.get('favorites');
+                const favorites = result.favorites || [];
+                const isInFavorites = favorites.some(f => f.url === tab.url);
+                favoritesOption.textContent = isInFavorites ? '★ Remove from Favorites' : '☆ Add to Favorites';
+            } catch (error) {
+                console.error('Error checking favorites:', error);
+                favoritesOption.textContent = '☆ Add to Favorites';
+            }
+        };
+        checkFavorites();
+        
+        favoritesOption.addEventListener('click', async () => {
+            contextMenu.remove(); // Close menu immediately for better UX
+            
+            try {
+                // Validate tab URL before proceeding
+                if (!tab.url || 
+                    tab.url.startsWith('chrome://') || 
+                    tab.url.startsWith('chrome-extension://') ||
+                    tab.url === 'about:blank' ||
+                    tab.url === '') {
+                    console.warn('⚠️ Cannot add to favorites: Invalid or system URL:', tab.url);
+                    return;
+                }
+                
+                // Validate it's a proper HTTP(S) URL
+                try {
+                    const testUrl = new URL(tab.url);
+                    if (!testUrl.protocol.startsWith('http')) {
+                        console.warn('⚠️ Cannot add to favorites: Not an HTTP(S) URL:', tab.url);
+                        return;
+                    }
+                } catch (urlError) {
+                    console.error('❌ Invalid URL format:', tab.url, urlError);
+                    return;
+                }
+                
+                // Get current favorites
+                const result = await chrome.storage.local.get('favorites');
+                let favorites = result.favorites || [];
+                
+                // Check if already in favorites
+                const existingIndex = favorites.findIndex(f => f.url === tab.url);
+                
+                if (existingIndex !== -1) {
+                    // Remove from favorites
+                    favorites.splice(existingIndex, 1);
+                    console.log('✅ Removed from favorites:', tab.title);
+                } else {
+                    // Get reliable favicon URL
+                    let favIconUrl = tab.favIconUrl;
+                    const urlObj = new URL(tab.url);
+                    const hostname = urlObj.hostname;
+                    
+                    // Validate favicon URL or use Google's service
+                    if (!favIconUrl || 
+                        favIconUrl.includes('chrome://') || 
+                        favIconUrl.includes('chrome-extension://') ||
+                        !(favIconUrl.startsWith('http://') || favIconUrl.startsWith('https://'))) {
+                        // Always use Google's favicon service with the domain
+                        favIconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+                        console.log('🌐 Using Google favicon service for:', hostname);
+                    } else {
+                        console.log('✅ Using tab favicon for:', hostname);
+                    }
+                    
+                    // Add to favorites
+                    favorites.push({
+                        url: tab.url,
+                        title: tab.title || hostname,
+                        favIconUrl: favIconUrl,
+                        addedAt: Date.now()
+                    });
+                    console.log('✅ Added to favorites:', tab.title || hostname);
+                }
+                
+                // Save and trigger re-render
+                await chrome.storage.local.set({ 
+                    favorites, 
+                    favoritesLastSaved: new Date().toISOString() 
+                });
+                
+                // Dispatch event to trigger re-render
+                window.dispatchEvent(new CustomEvent('favoritesChanged'));
+            } catch (error) {
+                console.error('❌ Error updating favorites:', error);
+            }
+        });
+        contextMenu.appendChild(favoritesOption);
 
         const addToBookmarkOption = document.createElement('div');
         addToBookmarkOption.className = 'context-menu-item';

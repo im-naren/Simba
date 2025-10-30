@@ -349,27 +349,125 @@ if (chrome.contextMenus) {
   });
 }
 
+// Log when commands are registered
+console.log('🔑 Keyboard command listener registered');
+
+// Track fullscreen state per window
+const fullscreenState = new Map(); // windowId -> { wasFullscreen: boolean, previousState: string }
+
 // Keyboard commands
 chrome.commands.onCommand.addListener(async function(command) {
-  if (command === "quickPinToggle") {
+  console.log('🎹 Command received:', command);
+  
+  if (command === "toggleSidebarFullscreen") {
+    console.log('🖥️ Toggle sidebar with fullscreen command');
+    
+    // Get current window info synchronously
+    chrome.windows.getCurrent(async (currentWindow) => {
+      try {
+        const windowId = currentWindow.id;
+        const isCurrentlyFullscreen = currentWindow.state === 'fullscreen';
+        
+        // Check if we have a tracked state for this window
+        const tracked = fullscreenState.get(windowId);
+        
+        if (isCurrentlyFullscreen && tracked) {
+          // We're in fullscreen mode that we created - revert everything
+          console.log('🔄 Reverting to normal mode');
+          
+          // Disable the sidebar (this closes it)
+          await chrome.sidePanel.setOptions({
+            enabled: false
+          });
+          
+          // Small delay to ensure sidebar closes
+          await new Promise(resolve => setTimeout(resolve, 50));
+          
+          // Restore the previous window state
+          await chrome.windows.update(windowId, { 
+            state: tracked.previousState || 'normal' 
+          });
+          
+          // Re-enable the sidebar for future use
+          await chrome.sidePanel.setOptions({
+            enabled: true
+          });
+          
+          // Clear the tracking
+          fullscreenState.delete(windowId);
+          console.log('✅ Reverted to normal mode');
+        } else {
+          // Enter fullscreen + sidebar mode
+          console.log('📂 Entering fullscreen + sidebar mode');
+          
+          // Save the current state before changing
+          fullscreenState.set(windowId, {
+            wasFullscreen: isCurrentlyFullscreen,
+            previousState: currentWindow.state
+          });
+          
+          // IMPORTANT: Open the sidebar FIRST, before ANY awaits
+          // sidePanel.open() must be called immediately in response to user gesture
+          await chrome.sidePanel.open({ windowId: windowId });
+          console.log('📂 Sidebar opened');
+          
+          // Then make the window fullscreen (this doesn't require user gesture)
+          await chrome.windows.update(windowId, { state: 'fullscreen' });
+          console.log('✅ Window set to fullscreen');
+        }
+      } catch (error) {
+        console.error('❌ Error toggling sidebar with fullscreen:', error);
+      }
+    });
+  } else if (command === "toggleSidebarOnly") {
+    console.log('🔀 Toggle sidebar only command');
+    
+    // Simple sidebar toggle without fullscreen
+    chrome.windows.getCurrent(async (currentWindow) => {
+      try {
+        // Just toggle the sidebar
+        await chrome.sidePanel.open({ windowId: currentWindow.id });
+        console.log('📂 Sidebar toggled');
+      } catch (error) {
+        // If it's already open, this will fail - that's the "toggle off" behavior
+        console.log('ℹ️ Sidebar toggle (may have closed):', error.message);
+      }
+    });
+  } else if (command === "quickPinToggle") {
+    console.log('📌 Quick pin toggle command');
     chrome.runtime.sendMessage({ command: "quickPinToggle" });
   } else if (command === "focusSidebarSearch") {
-    // Focus the sidebar search - broadcast to all extension contexts
+    // Focus the sidebar search using a persistent flag
+    console.log('⌨️ Cmd+K pressed - setting focus flag');
     try {
-      // Send message to sidebar (extension pages)
-      chrome.runtime.sendMessage({ action: 'focusSidebarSearch' });
+      // Set a flag with timestamp
+      await chrome.storage.local.set({ 
+        cmdKPressed: true,
+        cmdKTimestamp: Date.now()
+      });
+      console.log('✅ Focus flag set in storage');
       
-      // Also try to open the sidebar if it's not already open
+      // Try to open the sidebar if it's not already open
       const windows = await chrome.windows.getAll();
       if (windows.length > 0) {
         const currentWindow = windows.find(w => w.focused) || windows[0];
-        chrome.sidePanel.open({ windowId: currentWindow.id }).catch(() => {
-          // Sidebar might already be open, ignore error
+        chrome.sidePanel.open({ windowId: currentWindow.id }).then(() => {
+          console.log('📂 Sidebar opened');
+        }).catch((err) => {
+          console.log('ℹ️ Sidebar already open or error:', err.message);
         });
       }
+      
+      // Also send a message as backup
+      chrome.runtime.sendMessage({ action: 'focusSidebarSearch' }).catch(() => {
+        // Ignore errors if sidebar isn't ready
+        console.log('Message to sidebar failed (sidebar may not be ready)');
+      });
     } catch (error) {
-      console.error('Error focusing sidebar search:', error);
+      console.error('❌ Error handling Cmd+K:', error);
     }
+  } else {
+    console.log('❓ Unknown command received:', command);
   }
 });
 

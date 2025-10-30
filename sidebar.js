@@ -29,6 +29,9 @@ let defaultSpaceName = 'Home';
 let isTreeViewMode = false;
 let treeViewStates = {}; // Store tree view state per space
 let treeViewRenderTimeout = null; // Debounce tree view renders
+let favorites = []; // Store favorite tabs
+let hideDuplicates = false; // Hide duplicate tabs and bookmarks
+let twoLevelHierarchy = false; // Enable 2-level hierarchy in tree view
 
 // Helper function to update bookmark for a tab
 async function updateBookmarkForTab(tab, bookmarkTitle) {
@@ -46,6 +49,312 @@ async function updateBookmarkForTab(tab, bookmarkTitle) {
         }
     }
 
+}
+
+// ==================================================
+// FAVORITES MANAGEMENT - Clean Implementation
+// ==================================================
+
+let renderFavoritesTimeout = null;
+let isRenderingFavorites = false;
+
+// Helper function to get reliable favicon URL
+function getReliableFaviconUrl(url, tabFavIconUrl = null) {
+    try {
+        // Parse the URL
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname;
+        
+        // Skip invalid URLs
+        if (!hostname || hostname === 'localhost' || hostname.startsWith('127.0.0.1')) {
+            console.warn('⚠️ Invalid hostname for favicon:', hostname);
+            return getGenericFaviconDataUrl();
+        }
+        
+        // First, try to use the tab's favicon if it's valid and HTTP(S)
+        if (tabFavIconUrl && 
+            !tabFavIconUrl.includes('chrome://') && 
+            !tabFavIconUrl.includes('chrome-extension://') &&
+            (tabFavIconUrl.startsWith('http://') || tabFavIconUrl.startsWith('https://'))) {
+            console.log('✅ Using tab favicon for:', hostname);
+            return tabFavIconUrl;
+        }
+        
+        // Always use Google's favicon service as reliable fallback
+        const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+        console.log('🌐 Using Google favicon service for:', hostname);
+        return googleFaviconUrl;
+    } catch (error) {
+        console.error('❌ Error parsing URL for favicon:', url, error);
+        return getGenericFaviconDataUrl();
+    }
+}
+
+// Generic globe icon as data URL (SVG)
+function getGenericFaviconDataUrl() {
+    // A simple globe/world icon as SVG data URL
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="2" y1="12" x2="22" y2="12"></line>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>`;
+    return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+// Load favorites from storage
+async function loadFavorites() {
+    try {
+        const result = await chrome.storage.local.get(['favorites', 'favoritesLastSaved']);
+        favorites = result.favorites || [];
+        console.log('✅ Loaded favorites:', favorites.length, 'items');
+        await renderFavoritesDebounced();
+    } catch (error) {
+        console.error('❌ Error loading favorites:', error);
+        favorites = [];
+    }
+}
+
+// Save favorites to storage (without triggering re-render)
+async function saveFavorites() {
+    try {
+        const timestamp = new Date().toISOString();
+        await chrome.storage.local.set({ 
+            favorites: [...favorites], // Create copy to avoid reference issues
+            favoritesLastSaved: timestamp 
+        });
+        console.log('✅ Saved favorites:', favorites.length, 'items');
+    } catch (error) {
+        console.error('❌ Error saving favorites:', error);
+    }
+}
+
+// Add tab to favorites
+async function addToFavorites(tabId) {
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        
+        // Check if already in favorites (by URL)
+        if (favorites.some(f => f.url === tab.url)) {
+            console.log('Tab already in favorites');
+            return false;
+        }
+        
+        // Get reliable favicon URL
+        const favIconUrl = getReliableFaviconUrl(tab.url, tab.favIconUrl);
+        
+        // Add to favorites
+        favorites.push({
+            url: tab.url,
+            title: tab.title,
+            favIconUrl: favIconUrl,
+            addedAt: Date.now()
+        });
+        
+        await saveFavorites();
+        await renderFavoritesDebounced();
+        console.log('✅ Added to favorites:', tab.title);
+        return true;
+    } catch (error) {
+        console.error('❌ Error adding to favorites:', error);
+        return false;
+    }
+}
+
+// Remove from favorites
+async function removeFromFavorites(url) {
+    try {
+        const index = favorites.findIndex(f => f.url === url);
+        if (index === -1) {
+            console.warn('Favorite not found:', url);
+            return false;
+        }
+        
+        favorites.splice(index, 1);
+        await saveFavorites();
+        await renderFavoritesDebounced();
+        console.log('✅ Removed from favorites');
+        return true;
+    } catch (error) {
+        console.error('❌ Error removing favorite:', error);
+        return false;
+    }
+}
+
+// Check if tab is in favorites
+function isInFavorites(url) {
+    return favorites.some(f => f.url === url);
+}
+
+// Debounced render to prevent multiple rapid re-renders
+function renderFavoritesDebounced(delay = 100) {
+    if (renderFavoritesTimeout) {
+        clearTimeout(renderFavoritesTimeout);
+    }
+    
+    return new Promise((resolve) => {
+        renderFavoritesTimeout = setTimeout(async () => {
+            await renderFavorites();
+            resolve();
+        }, delay);
+    });
+}
+
+// Render favorites list (pure rendering, no data modification)
+async function renderFavorites() {
+    // Prevent concurrent renders
+    if (isRenderingFavorites) {
+        console.log('⏳ Render already in progress, skipping');
+        return;
+    }
+    
+    isRenderingFavorites = true;
+    
+    try {
+        const favoritesList = document.getElementById('favoritesList');
+        if (!favoritesList) {
+            console.warn('Favorites list element not found');
+            return;
+        }
+        
+        // Clear existing content
+        favoritesList.innerHTML = '';
+        
+        // Show empty message if no favorites
+        if (favorites.length === 0) {
+            const noFavoritesMsg = document.createElement('div');
+            noFavoritesMsg.className = 'no-favorites-message';
+            noFavoritesMsg.textContent = 'No favorites yet. Right-click a tab to add it to favorites.';
+            favoritesList.appendChild(noFavoritesMsg);
+            return;
+        }
+        
+        // Get current tabs for active state (optional, won't block render)
+        let allTabs = [];
+        let activeTabUrl = null;
+        try {
+            allTabs = await Promise.race([
+                chrome.tabs.query({}),
+                new Promise((_, reject) => setTimeout(() => reject('Timeout'), 1000))
+            ]);
+            const activeTab = allTabs.find(t => t.active);
+            activeTabUrl = activeTab?.url;
+        } catch (error) {
+            console.warn('Could not fetch tabs for active state:', error);
+        }
+        
+        // Render each favorite
+        for (const favorite of favorites) {
+            const favoriteItem = createFavoriteElement(favorite, activeTabUrl);
+            favoritesList.appendChild(favoriteItem);
+        }
+        
+        console.log('✅ Rendered', favorites.length, 'favorites');
+    } catch (error) {
+        console.error('❌ Error rendering favorites:', error);
+    } finally {
+        isRenderingFavorites = false;
+    }
+}
+
+// Lightweight update of active state (doesn't re-render everything)
+function updateFavoritesActiveState() {
+    const favoritesList = document.getElementById('favoritesList');
+    if (!favoritesList || favorites.length === 0) return;
+    
+    // Get active tab
+    chrome.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+        if (tabs.length === 0) return;
+        const activeTabUrl = tabs[0].url;
+        
+        // Update active class on favorite items
+        const favoriteItems = favoritesList.querySelectorAll('.favorite-item');
+        favoriteItems.forEach(item => {
+            if (item.dataset.url === activeTabUrl) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }).catch(error => {
+        console.error('Error updating favorites active state:', error);
+    });
+}
+
+// Create a single favorite element (extracted for clarity)
+function createFavoriteElement(favorite, activeTabUrl = null) {
+    const favoriteItem = document.createElement('div');
+    favoriteItem.className = 'favorite-item';
+    favoriteItem.dataset.url = favorite.url;
+    
+    // Add active class if this is the current tab
+    if (activeTabUrl && favorite.url === activeTabUrl) {
+        favoriteItem.classList.add('active');
+    }
+    
+    // Favicon
+    const favicon = document.createElement('img');
+    favicon.className = 'favorite-favicon';
+    favicon.src = getReliableFaviconUrl(favorite.url, favorite.favIconUrl);
+    favicon.alt = favorite.title;
+    
+    // Error handling for favicon - use generic globe icon as final fallback
+    let errorHandled = false;
+    favicon.onerror = () => {
+        if (!errorHandled) {
+            errorHandled = true;
+            console.warn('⚠️ Favicon failed to load for:', favorite.url, 'Using generic icon');
+            favicon.src = getGenericFaviconDataUrl();
+        }
+    };
+    
+    // Title (shown on hover)
+    const title = document.createElement('div');
+    title.className = 'favorite-title';
+    title.textContent = favorite.title;
+    title.title = `${favorite.title}\n${favorite.url}`;
+    
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'favorite-remove';
+    removeBtn.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+    `;
+    removeBtn.title = 'Remove from favorites';
+    removeBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        await removeFromFavorites(favorite.url);
+    });
+    
+    // Click handler - open or switch to tab
+    favoriteItem.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+            const tabs = await chrome.tabs.query({});
+            const existingTab = tabs.find(t => t.url === favorite.url);
+            
+            if (existingTab) {
+                // Switch to existing tab
+                await chrome.tabs.update(existingTab.id, { active: true });
+                await chrome.windows.update(existingTab.windowId, { focused: true });
+            } else {
+                // Create new tab
+                await chrome.tabs.create({ url: favorite.url, active: true });
+            }
+        } catch (error) {
+            console.error('❌ Error opening favorite:', error);
+        }
+    });
+    
+    // Assemble the favorite item
+    favoriteItem.appendChild(favicon);
+    favoriteItem.appendChild(title);
+    favoriteItem.appendChild(removeBtn);
+    
+    return favoriteItem;
 }
 
 // Pinned favicons function removed - using Chrome's native pinned tabs in favorites bar
@@ -128,6 +437,7 @@ async function loadBookmarks(spaceId) {
                 const bookmarkItem = document.createElement('div');
                 bookmarkItem.className = 'bookmark-item';
                 bookmarkItem.title = node.url;
+                bookmarkItem.dataset.url = node.url; // Store URL for duplicate detection
                 
                 const favicon = document.createElement('img');
                 favicon.className = 'bookmark-favicon';
@@ -246,15 +556,88 @@ function setupGlobalSearch() {
         return;
     }
     
-    // Listen for global Cmd+K command from background script
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === 'focusSidebarSearch') {
-            setTimeout(() => {
-                searchInput.focus();
-                searchInput.select();
-            }, 100); // Small delay to ensure sidebar is visible
+    // Function to focus search input
+    const focusSearchInput = () => {
+        console.log('🎯 Focusing search input...');
+        if (!searchInput) {
+            console.error('❌ Search input element not found!');
+            return;
+        }
+        searchInput.focus();
+        searchInput.select();
+        console.log('✅ Search input focused, active element:', document.activeElement);
+    };
+    
+    console.log('🔧 Setting up global search...');
+    
+    // Check flag immediately on load (in case sidebar was already open)
+    chrome.storage.local.get(['cmdKPressed', 'cmdKTimestamp'], (result) => {
+        console.log('📦 Initial storage check:', result);
+        if (result.cmdKPressed) {
+            const age = Date.now() - (result.cmdKTimestamp || 0);
+            console.log('⏰ Flag age:', age, 'ms');
+            if (age < 2000) {
+                console.log('🚀 Initial Cmd+K flag check - focusing search');
+                focusSearchInput();
+            }
+            chrome.storage.local.set({ cmdKPressed: false });
         }
     });
+    
+    // Listen for Cmd+K flag in storage (primary method)
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+        console.log('💾 Storage changed:', areaName, changes);
+        if (areaName === 'local' && changes.cmdKPressed?.newValue === true) {
+            console.log('🔔 Cmd+K flag detected in storage!');
+            focusSearchInput();
+            // Clear the flag
+            chrome.storage.local.set({ cmdKPressed: false });
+        }
+    });
+    
+    // Also check flag on visibility change
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            console.log('👀 Sidebar became visible - checking for Cmd+K flag');
+            chrome.storage.local.get(['cmdKPressed', 'cmdKTimestamp'], (result) => {
+                if (result.cmdKPressed) {
+                    // Check if flag is recent (within last 2 seconds)
+                    const age = Date.now() - (result.cmdKTimestamp || 0);
+                    if (age < 2000) {
+                        console.log('✨ Recent Cmd+K detected - focusing search');
+                        focusSearchInput();
+                    }
+                    // Clear the flag
+                    chrome.storage.local.set({ cmdKPressed: false });
+                }
+            });
+        }
+    });
+    
+    // Listen for messages as backup
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        console.log('📬 Sidebar received message:', message);
+        if (message.action === 'focusSidebarSearch') {
+            console.log('📨 Received focusSidebarSearch message - focusing input');
+            focusSearchInput();
+        }
+    });
+    
+    // Poll for the flag every 200ms as a final fallback
+    console.log('🔄 Starting polling mechanism for Cmd+K flag');
+    let pollInterval = setInterval(() => {
+        chrome.storage.local.get(['cmdKPressed', 'cmdKTimestamp'], (result) => {
+            if (result.cmdKPressed) {
+                const age = Date.now() - (result.cmdKTimestamp || 0);
+                console.log('⚡ Cmd+K flag detected via polling, age:', age, 'ms');
+                if (age < 2000) {
+                    console.log('✨ Polling detected recent Cmd+K - focusing search');
+                    focusSearchInput();
+                }
+                chrome.storage.local.set({ cmdKPressed: false });
+            }
+        });
+    }, 200);
     
     let searchTimeout = null;
     
@@ -548,6 +931,26 @@ function setupSettings() {
     // Load tree view state
     settingsTreeViewToggle.checked = isTreeViewMode;
     
+    // Load hide duplicates state
+    const settingsHideDuplicatesToggle = document.getElementById('settingsHideDuplicatesToggle');
+    chrome.storage.local.get(['hideDuplicates'], (result) => {
+        hideDuplicates = result.hideDuplicates === true;
+        if (settingsHideDuplicatesToggle) {
+            settingsHideDuplicatesToggle.checked = hideDuplicates;
+        }
+        // Update toolbar button state
+        updateHideDuplicatesButton();
+    });
+    
+    // Load 2-level hierarchy state
+    const settingsTreeHierarchyToggle = document.getElementById('settingsTreeHierarchyToggle');
+    chrome.storage.local.get(['twoLevelHierarchy'], (result) => {
+        twoLevelHierarchy = result.twoLevelHierarchy === true;
+        if (settingsTreeHierarchyToggle) {
+            settingsTreeHierarchyToggle.checked = twoLevelHierarchy;
+        }
+    });
+    
     // Toggle settings panel
     settingsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -601,6 +1004,29 @@ function setupSettings() {
         }
     });
     
+    // Hide duplicates toggle
+    if (settingsHideDuplicatesToggle) {
+        settingsHideDuplicatesToggle.addEventListener('change', (e) => {
+            hideDuplicates = e.target.checked;
+            chrome.storage.local.set({ hideDuplicates: hideDuplicates });
+            updateHideDuplicatesButton();
+            filterDuplicates();
+        });
+    }
+    
+    // 2-level hierarchy toggle
+    if (settingsTreeHierarchyToggle) {
+        settingsTreeHierarchyToggle.addEventListener('change', (e) => {
+            twoLevelHierarchy = e.target.checked;
+            chrome.storage.local.set({ twoLevelHierarchy: twoLevelHierarchy });
+            // Re-render tree view if currently in tree view mode
+            if (isTreeViewMode && activeSpaceId) {
+                renderTreeView(activeSpaceId);
+                renderBookmarksTreeView(activeSpaceId);
+            }
+        });
+    }
+    
     // Expand all
     settingsExpandAll.addEventListener('click', () => {
         expandAll();
@@ -612,6 +1038,86 @@ function setupSettings() {
         collapseAll();
         settingsPanel.classList.remove('visible');
     });
+    
+    // Size and compactness controls
+    const iconSizeSlider = document.getElementById('iconSizeSlider');
+    const iconSizeValue = document.getElementById('iconSizeValue');
+    const textSizeSlider = document.getElementById('textSizeSlider');
+    const textSizeValue = document.getElementById('textSizeValue');
+    const compactnessSlider = document.getElementById('compactnessSlider');
+    const compactnessValue = document.getElementById('compactnessValue');
+    
+    // Load saved sizing preferences
+    chrome.storage.local.get(['iconSize', 'textSize', 'compactness'], (result) => {
+        const iconSize = result.iconSize || 16;
+        const textSize = result.textSize || 12.5;
+        const compactness = result.compactness || 2;
+        
+        iconSizeSlider.value = iconSize;
+        textSizeSlider.value = textSize;
+        compactnessSlider.value = compactness;
+        
+        updateSizeValues(iconSize, textSize, compactness);
+        applySizing(iconSize, textSize, compactness);
+    });
+    
+    // Icon size slider
+    iconSizeSlider.addEventListener('input', (e) => {
+        const size = parseInt(e.target.value);
+        iconSizeValue.textContent = `${size}px`;
+        applySizing(size, parseFloat(textSizeSlider.value), parseInt(compactnessSlider.value));
+        chrome.storage.local.set({ iconSize: size });
+    });
+    
+    // Text size slider
+    textSizeSlider.addEventListener('input', (e) => {
+        const size = parseFloat(e.target.value);
+        textSizeValue.textContent = `${size}px`;
+        applySizing(parseInt(iconSizeSlider.value), size, parseInt(compactnessSlider.value));
+        chrome.storage.local.set({ textSize: size });
+    });
+    
+    // Compactness slider
+    compactnessSlider.addEventListener('input', (e) => {
+        const compactness = parseInt(e.target.value);
+        const labels = ['Max', 'High', 'Normal', 'Low', 'Min'];
+        compactnessValue.textContent = labels[compactness / 2];
+        applySizing(parseInt(iconSizeSlider.value), parseFloat(textSizeSlider.value), compactness);
+        chrome.storage.local.set({ compactness: compactness });
+    });
+}
+
+// Update size value displays
+function updateSizeValues(iconSize, textSize, compactness) {
+    const iconSizeValue = document.getElementById('iconSizeValue');
+    const textSizeValue = document.getElementById('textSizeValue');
+    const compactnessValue = document.getElementById('compactnessValue');
+    
+    if (iconSizeValue) iconSizeValue.textContent = `${iconSize}px`;
+    if (textSizeValue) textSizeValue.textContent = `${textSize}px`;
+    
+    if (compactnessValue) {
+        const labels = ['Max', 'High', 'Normal', 'Low', 'Min'];
+        compactnessValue.textContent = labels[compactness / 2];
+    }
+}
+
+// Apply sizing to CSS variables
+function applySizing(iconSize, textSize, compactness) {
+    const root = document.documentElement;
+    
+    // Set icon and text size
+    root.style.setProperty('--icon-size', `${iconSize}px`);
+    root.style.setProperty('--text-size', `${textSize}px`);
+    
+    // Calculate padding based on compactness (0 = most compact, 8 = least compact)
+    const paddingVertical = compactness;
+    const paddingHorizontal = compactness * 2;
+    const itemGap = Math.max(0, compactness - 2);
+    
+    root.style.setProperty('--item-padding-vertical', `${paddingVertical}px`);
+    root.style.setProperty('--item-padding-horizontal', `${paddingHorizontal}px`);
+    root.style.setProperty('--item-gap', `${itemGap}px`);
 }
 
 // Expand all folders and groups
@@ -666,6 +1172,114 @@ function collapseAll() {
     });
 }
 
+// Update the hide duplicates button state
+function updateHideDuplicatesButton() {
+    const hideDuplicatesBtn = document.getElementById('hideDuplicatesBtn');
+    if (hideDuplicatesBtn) {
+        if (hideDuplicates) {
+            hideDuplicatesBtn.classList.add('active');
+            hideDuplicatesBtn.title = 'Show Duplicates';
+        } else {
+            hideDuplicatesBtn.classList.remove('active');
+            hideDuplicatesBtn.title = 'Hide Duplicates';
+        }
+    }
+}
+
+// Filter duplicate tabs and bookmarks
+function filterDuplicates() {
+    if (!hideDuplicates) {
+        // Show all tabs and bookmarks
+        document.querySelectorAll('.tab[data-is-duplicate], .tree-tab-item[data-is-duplicate], .bookmark-item[data-is-duplicate]').forEach(element => {
+            element.style.display = '';
+            element.removeAttribute('data-is-duplicate');
+        });
+        return;
+    }
+    
+    // Track seen URLs
+    const seenUrls = new Set();
+    
+    // Process all tabs (both list view and tree view)
+    const allTabs = [
+        ...document.querySelectorAll('.tab'),
+        ...document.querySelectorAll('.tree-tab-item')
+    ];
+    
+    allTabs.forEach(tabElement => {
+        const url = tabElement.dataset.url || tabElement.querySelector('[data-url]')?.dataset.url;
+        
+        if (url) {
+            if (seenUrls.has(url)) {
+                // This is a duplicate, hide it
+                tabElement.style.display = 'none';
+                tabElement.setAttribute('data-is-duplicate', 'true');
+            } else {
+                // First occurrence, show it and add to seen URLs
+                tabElement.style.display = '';
+                tabElement.removeAttribute('data-is-duplicate');
+                seenUrls.add(url);
+            }
+        }
+    });
+    
+    // Process bookmarks
+    document.querySelectorAll('.bookmark-item').forEach(bookmarkElement => {
+        const url = bookmarkElement.dataset.url;
+        
+        if (url) {
+            if (seenUrls.has(url)) {
+                // This is a duplicate (already exists as tab or earlier bookmark), hide it
+                bookmarkElement.style.display = 'none';
+                bookmarkElement.setAttribute('data-is-duplicate', 'true');
+            } else {
+                // First occurrence, show it
+                bookmarkElement.style.display = '';
+                bookmarkElement.removeAttribute('data-is-duplicate');
+                seenUrls.add(url);
+            }
+        }
+    });
+    
+    // Update group counts if in tree view
+    updateGroupCounts();
+}
+
+// Update group counts after filtering
+function updateGroupCounts() {
+    // Update tree view domain group counts
+    document.querySelectorAll('.tree-domain-group').forEach(group => {
+        const visibleTabs = group.querySelectorAll('.tree-tab-item:not([style*="display: none"])').length;
+        const countElement = group.querySelector('.tree-domain-count');
+        if (countElement) {
+            countElement.textContent = visibleTabs;
+        }
+        
+        // Hide group if no visible tabs
+        if (visibleTabs === 0) {
+            group.style.display = 'none';
+        } else {
+            group.style.display = '';
+        }
+    });
+    
+    // Update list view group counts
+    document.querySelectorAll('.list-tab-group').forEach(group => {
+        const visibleTabs = group.querySelectorAll('.tab:not([style*="display: none"])').length;
+        const countElement = group.querySelector('.list-tab-group-count');
+        if (countElement) {
+            countElement.textContent = visibleTabs;
+        }
+        
+        // Hide group if no visible tabs
+        if (visibleTabs === 0) {
+            group.style.display = 'none';
+        } else {
+            group.style.display = '';
+        }
+    });
+}
+
 // Initialize the sidebar when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
@@ -677,7 +1291,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     chrome.tabs.onRemoved.addListener(handleTabRemove);
     // chrome.tabs.onMoved.addListener(handleTabMove);
-    chrome.tabs.onActivated.addListener(handleTabActivated);
+    chrome.tabs.onActivated.addListener(async (activeInfo) => {
+        await handleTabActivated(activeInfo);
+        // Update active state in favorites (debounced, lightweight)
+        updateFavoritesActiveState();
+    });
+    
+    // Listen for favorites changes from context menu
+    window.addEventListener('favoritesChanged', async () => {
+        console.log('📢 Favorites changed event received');
+        await loadFavorites();
+    });
+    
+    // Listen for storage changes from other windows (prevent loop)
+    let isUpdatingFromStorage = false;
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local' && changes.favorites && !isUpdatingFromStorage) {
+            isUpdatingFromStorage = true;
+            console.log('📢 Favorites changed in storage from another window');
+            favorites = changes.favorites.newValue || [];
+            renderFavoritesDebounced().finally(() => {
+                isUpdatingFromStorage = false;
+            });
+        }
+    });
 
     // Setup global search functionality
     setupGlobalSearch();
@@ -698,6 +1335,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (collapseAllBtn) {
         collapseAllBtn.addEventListener('click', () => {
             collapseAll();
+        });
+    }
+    
+    // Setup hide duplicates button
+    const hideDuplicatesBtn = document.getElementById('hideDuplicatesBtn');
+    if (hideDuplicatesBtn) {
+        hideDuplicatesBtn.addEventListener('click', () => {
+            hideDuplicates = !hideDuplicates;
+            chrome.storage.local.set({ hideDuplicates: hideDuplicates });
+            updateHideDuplicatesButton();
+            
+            // Update settings toggle to match
+            const settingsHideDuplicatesToggle = document.getElementById('settingsHideDuplicatesToggle');
+            if (settingsHideDuplicatesToggle) {
+                settingsHideDuplicatesToggle.checked = hideDuplicates;
+            }
+            
+            filterDuplicates();
+        });
+    }
+    
+    // Setup favorites toggle
+    const favoritesToggle = document.querySelector('.favorites-toggle');
+    const favoritesContent = document.querySelector('.favorites-content');
+    
+    if (favoritesToggle && favoritesContent) {
+        favoritesToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isCollapsed = favoritesContent.classList.toggle('collapsed');
+            favoritesToggle.classList.toggle('collapsed', isCollapsed);
+            
+            // Save state
+            chrome.storage.local.set({ favoritesSectionCollapsed: isCollapsed });
+        });
+        
+        // Restore collapsed state
+        chrome.storage.local.get('favoritesSectionCollapsed', (result) => {
+            if (result.favoritesSectionCollapsed) {
+                favoritesContent.classList.add('collapsed');
+                favoritesToggle.classList.add('collapsed');
+            }
         });
     }
 
@@ -897,6 +1575,9 @@ async function initSidebar() {
         console.error('Error setting up DOM elements (non-critical):', error);
         // This is non-critical - the sidebar should still work
     }
+    
+    // Load favorites
+    await loadFavorites();
     
     console.log('✅ Sidebar initialization complete');
 }
@@ -1229,6 +1910,81 @@ function groupTabsByDomain(tabs) {
     return Array.from(groups.values()).sort((a, b) => b.tabs.length - a.tabs.length);
 }
 
+// Group tabs by domain and path segment for 2-level hierarchy
+function groupTabsByDomainAndPath(tabs) {
+    const groups = new Map();
+    
+    tabs.forEach(tab => {
+        try {
+            const url = new URL(tab.url);
+            const domain = url.hostname || 'Unknown';
+            const pathSegments = url.pathname.split('/').filter(s => s.length > 0);
+            const subGroup = pathSegments.length > 0 ? pathSegments[0] : '(root)';
+            
+            // Create domain group if it doesn't exist
+            if (!groups.has(domain)) {
+                groups.set(domain, {
+                    domain: domain,
+                    favicon: Utils.getFaviconUrl(tab.url),
+                    subGroups: new Map(),
+                    isParent: true
+                });
+            }
+            
+            const domainGroup = groups.get(domain);
+            
+            // Create subgroup if it doesn't exist
+            if (!domainGroup.subGroups.has(subGroup)) {
+                domainGroup.subGroups.set(subGroup, {
+                    name: subGroup,
+                    tabs: [],
+                    favicon: Utils.getFaviconUrl(tab.url)
+                });
+            }
+            
+            domainGroup.subGroups.get(subGroup).tabs.push(tab);
+        } catch (error) {
+            // Invalid URL, group under 'Unknown'
+            if (!groups.has('Unknown')) {
+                groups.set('Unknown', {
+                    domain: 'Unknown',
+                    favicon: 'assets/default_icon.png',
+                    subGroups: new Map(),
+                    isParent: true
+                });
+            }
+            
+            const unknownGroup = groups.get('Unknown');
+            if (!unknownGroup.subGroups.has('(unknown)')) {
+                unknownGroup.subGroups.set('(unknown)', {
+                    name: '(unknown)',
+                    tabs: [],
+                    favicon: 'assets/default_icon.png'
+                });
+            }
+            unknownGroup.subGroups.get('(unknown)').tabs.push(tab);
+        }
+    });
+    
+    // Convert subGroups Maps to arrays and sort
+    const result = Array.from(groups.values()).map(group => {
+        const subGroupsArray = Array.from(group.subGroups.values())
+            .sort((a, b) => b.tabs.length - a.tabs.length);
+        
+        // Calculate total tabs count for the domain
+        const totalTabs = subGroupsArray.reduce((sum, sg) => sum + sg.tabs.length, 0);
+        
+        return {
+            ...group,
+            subGroups: subGroupsArray,
+            totalTabs: totalTabs
+        };
+    });
+    
+    // Sort groups by total tab count (descending)
+    return result.sort((a, b) => b.totalTabs - a.totalTabs);
+}
+
 async function groupTabsByTabGroups(tabs) {
     const groups = new Map();
     const tabGroups = await chrome.tabGroups.query({ windowId: currentWindow.id });
@@ -1262,11 +2018,11 @@ async function groupTabsByTabGroups(tabs) {
         groups.get(groupKey).tabs.push(tab);
     });
     
-    // Sort groups: current space first, then by tab count
+    // Sort groups: ungrouped tabs first, then grouped tabs by tab count
     return Array.from(groups.values()).sort((a, b) => {
-        // Put ungrouped tabs last
-        if (a.groupId === -1) return 1;
-        if (b.groupId === -1) return -1;
+        // Put ungrouped tabs first
+        if (a.groupId === -1) return -1;
+        if (b.groupId === -1) return 1;
         return b.tabs.length - a.tabs.length;
     });
 }
@@ -1304,20 +2060,41 @@ async function renderTreeView(spaceId) {
             return;
         }
         
-        // Group tabs by domain (NOT by Chrome tab groups)
-        const groups = groupTabsByDomain(temporaryTabs);
-        console.log('Grouped tabs by domain:', groups.length, 'groups', groups.map(g => `${g.domain} (${g.tabs.length})`));
-        
-        // Render each domain group
-        for (const group of groups) {
-            console.log('Rendering domain group:', group.domain);
-            const groupElement = await createDomainGroupElement(group, spaceId);
-            if (groupElement && treeContainer.isConnected) {
-                treeContainer.appendChild(groupElement);
-                console.log('Domain group element appended:', group.domain);
+        // Group tabs by domain or domain+path depending on setting
+        if (twoLevelHierarchy) {
+            const groups = groupTabsByDomainAndPath(temporaryTabs);
+            console.log('Grouped tabs by domain and path (2-level):', groups.length, 'groups');
+            
+            // Render each domain group with subgroups
+            for (const group of groups) {
+                console.log('Rendering 2-level domain group:', group.domain);
+                const groupElement = await createTwoLevelDomainGroupElement(group, spaceId);
+                if (groupElement && treeContainer.isConnected) {
+                    treeContainer.appendChild(groupElement);
+                    console.log('2-level domain group element appended:', group.domain);
+                }
+            }
+        } else {
+            // Original single-level grouping
+            const groups = groupTabsByDomain(temporaryTabs);
+            console.log('Grouped tabs by domain:', groups.length, 'groups', groups.map(g => `${g.domain} (${g.tabs.length})`));
+            
+            // Render each domain group
+            for (const group of groups) {
+                console.log('Rendering domain group:', group.domain);
+                const groupElement = await createDomainGroupElement(group, spaceId);
+                if (groupElement && treeContainer.isConnected) {
+                    treeContainer.appendChild(groupElement);
+                    console.log('Domain group element appended:', group.domain);
+                }
             }
         }
         console.log('=== renderTreeView END ===');
+        
+        // Apply duplicate filtering if enabled
+        if (hideDuplicates) {
+            setTimeout(() => filterDuplicates(), 100);
+        }
     } catch (error) {
         console.error('Error rendering tree view:', error);
     }
@@ -1368,49 +2145,77 @@ async function renderBookmarksTreeView(spaceId) {
             return;
         }
         
-        // Group bookmarks by domain
-        const domainGroups = {};
-        
-        for (const bookmark of allBookmarks) {
-            let domain = 'Unknown';
-            try {
-                const url = new URL(bookmark.url);
-                domain = url.hostname || 'Unknown';
-            } catch (error) {
-                domain = 'Unknown';
-            }
+        // Convert bookmarks to tab-like objects for grouping
+        const bookmarkTabs = allBookmarks.map(bookmark => {
             const favicon = Utils.getFaviconUrl(bookmark.url);
-            
-            if (!domainGroups[domain]) {
-                domainGroups[domain] = {
-                    domain: domain,
-                    favicon: favicon,
-                    tabs: []
-                };
-            }
-            
-            // Create a tab-like object for the bookmark
-            domainGroups[domain].tabs.push({
+            return {
                 id: null,
                 title: bookmark.title,
                 url: bookmark.url,
                 favIconUrl: favicon,
                 isBookmark: true
-            });
-        }
+            };
+        });
         
-        // Convert to array and sort
-        const groups = Object.values(domainGroups).sort((a, b) => 
-            b.tabs.length - a.tabs.length
-        );
-        
-        // Create domain group elements
-        for (const group of groups) {
-            const groupElement = await createDomainGroupElement(group, spaceId, true);
-            bookmarksTreeContainer.appendChild(groupElement);
+        // Group bookmarks by domain or domain+path depending on setting
+        if (twoLevelHierarchy) {
+            const groups = groupTabsByDomainAndPath(bookmarkTabs);
+            
+            // Create 2-level domain group elements
+            for (const group of groups) {
+                const groupElement = await createTwoLevelDomainGroupElement(group, spaceId, true);
+                bookmarksTreeContainer.appendChild(groupElement);
+            }
+        } else {
+            // Original single-level grouping
+            const domainGroups = {};
+            
+            for (const bookmark of allBookmarks) {
+                let domain = 'Unknown';
+                try {
+                    const url = new URL(bookmark.url);
+                    domain = url.hostname || 'Unknown';
+                } catch (error) {
+                    domain = 'Unknown';
+                }
+                const favicon = Utils.getFaviconUrl(bookmark.url);
+                
+                if (!domainGroups[domain]) {
+                    domainGroups[domain] = {
+                        domain: domain,
+                        favicon: favicon,
+                        tabs: []
+                    };
+                }
+                
+                // Create a tab-like object for the bookmark
+                domainGroups[domain].tabs.push({
+                    id: null,
+                    title: bookmark.title,
+                    url: bookmark.url,
+                    favIconUrl: favicon,
+                    isBookmark: true
+                });
+            }
+            
+            // Convert to array and sort
+            const groups = Object.values(domainGroups).sort((a, b) => 
+                b.tabs.length - a.tabs.length
+            );
+            
+            // Create domain group elements
+            for (const group of groups) {
+                const groupElement = await createDomainGroupElement(group, spaceId, true);
+                bookmarksTreeContainer.appendChild(groupElement);
+            }
         }
         
         console.log('=== renderBookmarksTreeView END ===');
+        
+        // Apply duplicate filtering if enabled
+        if (hideDuplicates) {
+            setTimeout(() => filterDuplicates(), 100);
+        }
     } catch (error) {
         console.error('Error rendering bookmarks tree view:', error);
     }
@@ -1482,6 +2287,135 @@ async function createDomainGroupElement(group, spaceId, isBookmark = false) {
     
     groupDiv.appendChild(header);
     groupDiv.appendChild(tabsContainer);
+    
+    return groupDiv;
+}
+
+// Create a 2-level domain group element (domain -> path segment -> tabs)
+async function createTwoLevelDomainGroupElement(group, spaceId, isBookmark = false) {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'tree-domain-group two-level';
+    
+    // Create header for the domain (Level 1)
+    const header = document.createElement('div');
+    header.className = 'tree-domain-header';
+    
+    // Expand icon for domain
+    const expandIcon = document.createElement('div');
+    expandIcon.className = 'tree-expand-icon expanded';
+    expandIcon.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+    `;
+    
+    // Domain icon (favicon)
+    const domainIcon = document.createElement('img');
+    domainIcon.className = 'tree-domain-icon';
+    domainIcon.src = group.favicon;
+    domainIcon.onerror = () => { domainIcon.src = 'assets/default_icon.png'; };
+    
+    // Domain name
+    const domainName = document.createElement('div');
+    domainName.className = 'tree-domain-name';
+    domainName.textContent = group.domain;
+    
+    // Total tab count for domain
+    const tabCount = document.createElement('div');
+    tabCount.className = 'tree-domain-count';
+    tabCount.textContent = group.totalTabs.toString();
+    
+    header.appendChild(expandIcon);
+    header.appendChild(domainIcon);
+    header.appendChild(domainName);
+    header.appendChild(tabCount);
+    
+    // Create container for subgroups (Level 2)
+    const subGroupsContainer = document.createElement('div');
+    subGroupsContainer.className = 'tree-subgroups-container expanded';
+    
+    // Create each subgroup
+    for (const subGroup of group.subGroups) {
+        const subGroupDiv = document.createElement('div');
+        subGroupDiv.className = 'tree-subgroup';
+        
+        // Subgroup header
+        const subGroupHeader = document.createElement('div');
+        subGroupHeader.className = 'tree-subgroup-header';
+        
+        // Expand icon for subgroup
+        const subExpandIcon = document.createElement('div');
+        subExpandIcon.className = 'tree-expand-icon expanded';
+        subExpandIcon.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        `;
+        
+        // Subgroup icon
+        const subGroupIcon = document.createElement('img');
+        subGroupIcon.className = 'tree-subgroup-icon';
+        subGroupIcon.src = subGroup.favicon;
+        subGroupIcon.onerror = () => { subGroupIcon.src = 'assets/default_icon.png'; };
+        
+        // Subgroup name
+        const subGroupName = document.createElement('div');
+        subGroupName.className = 'tree-subgroup-name';
+        subGroupName.textContent = subGroup.name;
+        
+        // Subgroup tab count
+        const subTabCount = document.createElement('div');
+        subTabCount.className = 'tree-subgroup-count';
+        subTabCount.textContent = subGroup.tabs.length.toString();
+        
+        subGroupHeader.appendChild(subExpandIcon);
+        subGroupHeader.appendChild(subGroupIcon);
+        subGroupHeader.appendChild(subGroupName);
+        subGroupHeader.appendChild(subTabCount);
+        
+        // Create tabs container for subgroup
+        const subTabsContainer = document.createElement('div');
+        subTabsContainer.className = 'tree-subgroup-tabs expanded';
+        subTabsContainer.style.setProperty('--group-line-color', 'var(--border-color)');
+        
+        // Create tab elements
+        for (const tab of subGroup.tabs) {
+            const tabElement = await createTreeTabElement(tab, spaceId, isBookmark);
+            subTabsContainer.appendChild(tabElement);
+        }
+        
+        // Toggle expand/collapse for subgroup
+        subGroupHeader.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isExpanded = subTabsContainer.classList.contains('expanded');
+            if (isExpanded) {
+                subTabsContainer.classList.remove('expanded');
+                subExpandIcon.classList.remove('expanded');
+            } else {
+                subTabsContainer.classList.add('expanded');
+                subExpandIcon.classList.add('expanded');
+            }
+        });
+        
+        subGroupDiv.appendChild(subGroupHeader);
+        subGroupDiv.appendChild(subTabsContainer);
+        subGroupsContainer.appendChild(subGroupDiv);
+    }
+    
+    // Toggle expand/collapse for domain
+    header.addEventListener('click', () => {
+        const isExpanded = subGroupsContainer.classList.contains('expanded');
+        if (isExpanded) {
+            subGroupsContainer.classList.remove('expanded');
+            expandIcon.classList.remove('expanded');
+        } else {
+            subGroupsContainer.classList.add('expanded');
+            expandIcon.classList.add('expanded');
+        }
+    });
+    
+    groupDiv.appendChild(header);
+    groupDiv.appendChild(subGroupsContainer);
     
     return groupDiv;
 }
@@ -1736,9 +2670,23 @@ async function refreshTemporaryTabsList(spaceId) {
         const tabGroups = await groupTabsByTabGroups(temporaryTabObjects);
         
         for (const group of tabGroups) {
-            const groupElement = await createListTabGroupElement(group, spaceId);
-            tempContainer.appendChild(groupElement);
+            // Render ungrouped tabs directly without group wrapper
+            if (group.groupId === -1) {
+                for (const tab of group.tabs) {
+                    const tabElement = await createTabElement(tab);
+                    tempContainer.appendChild(tabElement);
+                }
+            } else {
+                // Render grouped tabs with group wrapper
+                const groupElement = await createListTabGroupElement(group, spaceId);
+                tempContainer.appendChild(groupElement);
+            }
         }
+    }
+    
+    // Apply duplicate filtering if enabled
+    if (hideDuplicates) {
+        setTimeout(() => filterDuplicates(), 100);
     }
 }
 
@@ -2105,6 +3053,11 @@ async function setActiveSpace(spaceId, updateTab = true) {
 
     // In unified view, we don't need to manage Chrome tab group collapse states
     // All tab groups are shown as collapsible sections within the Tabs area
+    
+    // Apply duplicate filtering if enabled
+    if (hideDuplicates) {
+        setTimeout(() => filterDuplicates(), 200);
+    }
 }
 
 async function createSpaceFromInactive(spaceName, tabToMove) {
@@ -2380,8 +3333,18 @@ async function loadTabs(space, tempContainer) {
             // Render each tab group
             for (const group of tabGroups) {
                 console.log('📊 loadTabs: Rendering group:', group.groupName, 'with', group.tabs.length, 'tabs');
-                const groupElement = await createListTabGroupElement(group, space.id);
-                tempContainer.appendChild(groupElement);
+                
+                // Render ungrouped tabs directly without group wrapper
+                if (group.groupId === -1) {
+                    for (const tab of group.tabs) {
+                        const tabElement = await createTabElement(tab);
+                        tempContainer.appendChild(tabElement);
+                    }
+                } else {
+                    // Render grouped tabs with group wrapper
+                    const groupElement = await createListTabGroupElement(group, space.id);
+                    tempContainer.appendChild(groupElement);
+                }
             }
             console.log('📊 loadTabs: All groups appended to container');
         } else {
@@ -2462,6 +3425,8 @@ async function closeTab(tabElement, tab, isPinned = false, isBookmarkOnly = fals
         }
     } else {
         chrome.tabs.remove(tab.id);
+        // Remove the tab element from the DOM
+        tabElement.remove();
     }
 }
 
@@ -3073,6 +4038,9 @@ async function handleTabRemove(tabId) {
             space.spaceBookmarks = space.spaceBookmarks.filter(id => id !== tabId);
             space.temporaryTabs = space.temporaryTabs.filter(id => id !== tabId);
         });
+
+        // Remove the tab element from the DOM
+        tabElement.remove();
 
         if (!isPinned) {
             // Refresh the unified view to show updated tab counts

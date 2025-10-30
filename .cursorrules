@@ -1,0 +1,122 @@
+# Documentation Rules
+
+## Documentation Organization Structure
+
+### Essential Documentation (`docs/` folder)
+
+Essential, permanent documentation that is critical for the project:
+
+- Privacy policies
+- Terms of service
+- Store/marketplace descriptions
+- Legal documents
+- Official documentation
+- Compliance documents
+
+**Location**: `docs/` folder in project root
+
+### Non-Essential Documentation (`cDoc/` folder)
+
+Development documentation, notes, guides, and temporary docs:
+
+- Feature documentation
+- API documentation
+- Setup guides
+- Architecture docs
+- Meeting notes
+- Temporary fixes and notes
+- Testing documentation
+- Development guides
+
+**Location**: `cDoc/` folder in project root
+
+### Project Root (Exceptions Only)
+
+- README.md
+- LICENSE
+- CHANGELOG.md
+- .cursorrules
+
+## Rules
+
+1. **Essential docs** (privacy, legal, store) → `docs/`
+2. **Non-essential docs** (dev docs, notes, guides) → `cDoc/`
+3. Never create documentation in project root unless it's README.md, LICENSE, or CHANGELOG.md
+4. When in doubt, use `cDoc/` for development documentation
+5. **ALL documentation MUST be created with ZERO lint issues**
+
+## Documentation Quality Standards
+
+### Markdown Linting Rules
+
+All documentation must follow these standards to ensure zero lint issues:
+
+1. **Heading Structure**
+   - Use ATX-style headings (`#` not underlines)
+   - Start with single `#` (H1) at the top
+   - Don't skip heading levels (no H1 → H3)
+   - One H1 per document
+   - Add blank line before and after headings
+
+2. **Lists**
+   - Use consistent list markers (`-` or `*`, pick one)
+   - Indent nested lists by 2 or 4 spaces (be consistent)
+   - Add blank line before and after lists
+   - Proper spacing after list markers (one space)
+
+3. **Code Blocks**
+   - Use fenced code blocks with language identifiers
+   - Example: \`\`\`javascript not \`\`\`
+   - Add blank line before and after code blocks
+
+4. **Links and References**
+   - No bare URLs - use proper markdown links: `[text](url)`
+   - Ensure all links are valid and not broken
+   - Use descriptive link text (not "click here")
+
+5. **Formatting**
+   - No trailing whitespace at end of lines
+   - Files must end with single blank line
+   - No multiple consecutive blank lines (max 1)
+   - Use proper emphasis: `*italic*` or `**bold**`
+
+6. **Line Length**
+   - Prefer lines under 100 characters for readability
+   - Break long lines at natural breakpoints
+
+7. **Tables**
+   - Use proper table formatting with aligned columns
+   - Include header separator row
+   - Consistent spacing with pipes
+
+8. **Special Characters**
+   - Escape special markdown characters when needed
+   - Use HTML entities for special symbols if necessary
+
+### Writing Best Practices
+
+- Use clear, concise language
+- Check spelling and grammar
+- Use consistent terminology
+- Include examples where helpful
+- Keep paragraphs focused and short
+- Use active voice when possible
+
+### Before Committing Documentation
+
+- Verify zero lint errors
+- Check all links work
+- Review formatting consistency
+- Ensure proper heading hierarchy
+- Validate code examples are correct
+
+## Examples
+
+- Privacy policy → `docs/privacy-policy.md`
+- Store description → `docs/store-description.md`
+- Feature documentation → `cDoc/features/`
+- API documentation → `cDoc/api/`
+- Setup guides → `cDoc/setup/`
+- Architecture docs → `cDoc/architecture/`
+- Meeting notes → `cDoc/notes/`
+- Temporary docs and fixes → `cDoc/temp/`

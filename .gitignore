@@ -32,3 +32,6 @@ yarn-error.log*
 # Temporary files
 *.tmp
 *.temp
+
+# Development documentation (non-essential)
+cDoc/
