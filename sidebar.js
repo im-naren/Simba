@@ -1241,7 +1241,7 @@ function performSearch(query) {
     }
     
     // Search through all tabs in all tabGroups
-    document.querySelectorAll('.space').forEach(tabGroupElement => {
+    document.querySelectorAll('.tab-group').forEach(tabGroupElement => {
         let tabGroupHasMatches = false;
         
         // Search temporary tabs in list view
@@ -2187,8 +2187,14 @@ function createTabGroupElement(tabGroup) {
     console.log('🚀 tabGroupTemplate exists:', !!tabGroupTemplate);
     const tabGroupElement = tabGroupTemplate.content.cloneNode(true);
     const sidebarContainer = document.getElementById('sidebar-container');
-    const tabGroupContainer = tabGroupElement.querySelector('.space');
+    const tabGroupContainer = tabGroupElement.querySelector('.tab-group');
     console.log('🚀 tabGroupContainer found:', !!tabGroupContainer);
+    
+    if (!tabGroupContainer) {
+        console.error('❌ Tab group container not found in template!');
+        return;
+    }
+    
     tabGroupContainer.dataset.groupId = tabGroup.id;
     tabGroupContainer.style.display = 'block'; // Always show in unified view
     tabGroupContainer.dataset.tabGroupUuid = tabGroup.id;
@@ -2245,7 +2251,7 @@ function createTabGroupElement(tabGroup) {
     }
 
     // Set up tabGroup name input
-    const nameInput = tabGroupElement.querySelector('.space-name');
+    const nameInput = tabGroupElement.querySelector('.tab-group-name');
     if (nameInput) {
         nameInput.value = tabGroup.name;
         nameInput.addEventListener('change', async () => {
@@ -3780,7 +3786,7 @@ async function createNewFolder(tabGroupElement) {
 
     // Set up folder name input
     folderNameInput.addEventListener('change', async () => {
-        const groupName = tabGroupElement.querySelector('.space-name').value;
+        const groupName = tabGroupElement.querySelector('.tab-group-name').value;
         const tabGroupFolder = await LocalStorage.getOrCreateTabGroupFolder(groupName);
         const existingFolders = await chrome.bookmarks.getChildren(tabGroupFolder.id);
         const folder = existingFolders.find(f => f.title === folderNameInput.value);
