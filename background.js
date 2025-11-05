@@ -188,7 +188,7 @@ async function checkAndCloseDuplicateTab(currentTab) {
 }
 
 // ==================================================
-// AUTO-ARCHIVE FUNCTIONALITY (from Arcify)
+// AUTO-ARCHIVE FUNCTIONALITY
 // ==================================================
 
 async function updateTabLastActivity(tabId) {
@@ -246,13 +246,13 @@ async function runAutoArchiveCheck() {
     const activityResult = await chrome.storage.local.get(TAB_ACTIVITY_STORAGE_KEY);
     const tabActivity = activityResult[TAB_ACTIVITY_STORAGE_KEY] || {};
 
-    const spacesResult = await chrome.storage.local.get('spaces');
-    const spaces = spacesResult.spaces || [];
+    const tabGroupsResult = await chrome.storage.local.get('tabGroups');
+    const tabGroups = tabGroupsResult.tabGroups || [];
     const bookmarkedUrls = new Set();
     
-    spaces.forEach(space => {
-      if (space.spaceBookmarks) {
-        space.spaceBookmarks.forEach(bookmark => {
+    tabGroups.forEach(tabGroup => {
+      if (tabGroup.tabGroupBookmarks) {
+        tabGroup.tabGroupBookmarks.forEach(bookmark => {
           if (typeof bookmark === 'string') {
             bookmarkedUrls.add(bookmark);
           } else if (bookmark && bookmark.url) {
@@ -292,10 +292,10 @@ async function runAutoArchiveCheck() {
       const tabData = {
         url: tab.url,
         name: tab.title || tab.url,
-        spaceId: tab.groupId
+        groupId: tab.groupId
       };
 
-      if (tabData.spaceId && tabData.spaceId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
+      if (tabData.groupId && tabData.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
         await Utils.addArchivedTab(tabData);
         await chrome.tabs.remove(tab.id);
         await removeTabLastActivity(tab.id);
@@ -587,9 +587,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ success: true, closedCount: specificClosedCount });
           break;
         
-        // Arcify actions
-        case 'toggleSpacePin':
-          chrome.runtime.sendMessage({ command: "toggleSpacePin", tabId: message.tabId });
+        // Tab Group management actions
+        case 'toggleTabGroupPin':
+          chrome.runtime.sendMessage({ command: "toggleTabGroupPin", tabId: message.tabId });
           sendResponse({ success: true });
           break;
           

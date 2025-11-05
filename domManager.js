@@ -17,60 +17,60 @@ function getChromeGroupColor(colorName) {
     return colorMap[colorName] || '#5F6368';
 }
 
-export function setupDOMElements(createNewSpace, createNewTab) {
+export function setupDOMElements(createNewTabGroup, createNewTab) {
     // Get DOM Elements (must be done here, not at module load time)
-    const spacesList = document.getElementById('spacesList');
-    const spaceSwitcher = document.getElementById('spaceSwitcher');
-    const addSpaceBtn = document.getElementById('addSpaceBtn');
+    const tabGroupsList = document.getElementById('tabGroupsList');
+    const tabGroupSwitcher = document.getElementById('tabGroupSwitcher');
+    const addTabGroupBtn = document.getElementById('addTabGroupBtn');
     const newTabBtn = document.getElementById('newTabBtn');
-    const spaceTemplate = document.getElementById('spaceTemplate');
+    const tabGroupTemplate = document.getElementById('tabGroupTemplate');
     
     console.log('🔧 setupDOMElements - DOM elements:', {
-        spacesList: !!spacesList,
-        spaceSwitcher: !!spaceSwitcher,
-        addSpaceBtn: !!addSpaceBtn,
+        tabGroupsList: !!tabGroupsList,
+        tabGroupSwitcher: !!tabGroupSwitcher,
+        addTabGroupBtn: !!addTabGroupBtn,
         newTabBtn: !!newTabBtn,
-        spaceTemplate: !!spaceTemplate
+        tabGroupTemplate: !!tabGroupTemplate
     });
     
-    // Only add spaceSwitcher listener if it exists (hidden in unified view)
-    if (spaceSwitcher) {
-        spaceSwitcher.addEventListener('wheel', (event) => {
+    // Only add tabGroupSwitcher listener if it exists (hidden in unified view)
+    if (tabGroupSwitcher) {
+        tabGroupSwitcher.addEventListener('wheel', (event) => {
             event.preventDefault();
 
             const scrollAmount = event.deltaY;
 
-            spaceSwitcher.scrollLeft += scrollAmount;
+            tabGroupSwitcher.scrollLeft += scrollAmount;
         }, { passive: false });
     }
 
     // Add event listeners for buttons (only if they exist - hidden in unified view)
-    if (addSpaceBtn) {
-        addSpaceBtn.addEventListener('click', () => {
-            const inputContainer = document.getElementById('addSpaceInputContainer');
-            const spaceNameInput = document.getElementById('newSpaceName');
+    if (addTabGroupBtn) {
+        addTabGroupBtn.addEventListener('click', () => {
+            const inputContainer = document.getElementById('addTabGroupInputContainer');
+            const tabGroupNameInput = document.getElementById('newTabGroupName');
             const isInputVisible = inputContainer.classList.contains('visible');
 
             // Toggle visibility classes
             inputContainer.classList.toggle('visible');
-            addSpaceBtn.classList.toggle('active');
+            addTabGroupBtn.classList.toggle('active');
 
-            // Toggle space switcher visibility
-            if (isInputVisible && spaceSwitcher) {
-                spaceSwitcher.style.opacity = '1';
-                spaceSwitcher.style.visibility = 'visible';
-            } else if (spaceSwitcher) {
-                spaceNameInput.value = '';
-                spaceSwitcher.style.opacity = '0';
-                spaceSwitcher.style.visibility = 'hidden';
+            // Toggle tab group switcher visibility
+            if (isInputVisible && tabGroupSwitcher) {
+                tabGroupSwitcher.style.opacity = '1';
+                tabGroupSwitcher.style.visibility = 'visible';
+            } else if (tabGroupSwitcher) {
+                tabGroupNameInput.value = '';
+                tabGroupSwitcher.style.opacity = '0';
+                tabGroupSwitcher.style.visibility = 'hidden';
             }
         });
     }
 
-    // Only add create space button listener if it exists (hidden in unified view)
-    const createSpaceBtn = document.getElementById('createSpaceBtn');
-    if (createSpaceBtn) {
-        createSpaceBtn.addEventListener('click', createNewSpace);
+    // Only add create tab group button listener if it exists (hidden in unified view)
+    const createTabGroupBtn = document.getElementById('createTabGroupBtn');
+    if (createTabGroupBtn) {
+        createTabGroupBtn.addEventListener('click', createNewTabGroup);
     }
     
     // Only add new tab button listener if it exists (it's removed in unified view)
@@ -78,12 +78,12 @@ export function setupDOMElements(createNewSpace, createNewTab) {
         newTabBtn.addEventListener('click', createNewTab);
     }
 
-    const createSpaceColorSwatch = document.getElementById('createSpaceColorSwatch');
-    if (createSpaceColorSwatch) {
-        createSpaceColorSwatch.addEventListener('click', (e) => {
+    const createTabGroupColorSwatch = document.getElementById('createTabGroupColorSwatch');
+    if (createTabGroupColorSwatch) {
+        createTabGroupColorSwatch.addEventListener('click', (e) => {
             if (e.target.classList.contains('color-swatch')) {
-                const colorPicker = document.getElementById('createSpaceColorSwatch');
-                const select = document.getElementById('spaceColor');
+                const colorPicker = document.getElementById('createTabGroupColorSwatch');
+                const select = document.getElementById('tabGroupColor');
                 const color = e.target.dataset.color;
 
                 // Update selected swatch
@@ -103,9 +103,9 @@ export function setupDOMElements(createNewSpace, createNewTab) {
     }
 
     // Initialize selected swatches (only if they exist)
-    const spaceColorSelects = document.querySelectorAll('.space-color-select');
-    if (spaceColorSelects.length > 0) {
-        spaceColorSelects.forEach(select => {
+    const tabGroupColorSelects = document.querySelectorAll('.tab-group-color-select');
+    if (tabGroupColorSelects.length > 0) {
+        tabGroupColorSelects.forEach(select => {
             const colorPicker = select.nextElementSibling;
             if (colorPicker) {
                 const currentColor = select.value;
@@ -117,13 +117,13 @@ export function setupDOMElements(createNewSpace, createNewTab) {
         });
     }
 
-    // Add input validation for new space name (only if it exists)
-    const newSpaceNameInput = document.getElementById('newSpaceName');
-    if (newSpaceNameInput) {
-        newSpaceNameInput.addEventListener('input', (e) => {
-            const createSpaceBtn = document.getElementById('createSpaceBtn');
-            if (createSpaceBtn) {
-                createSpaceBtn.disabled = !e.target.value.trim();
+    // Add input validation for new tab group name (only if it exists)
+    const newTabGroupNameInput = document.getElementById('newTabGroupName');
+    if (newTabGroupNameInput) {
+        newTabGroupNameInput.addEventListener('input', (e) => {
+            const createTabGroupBtn = document.getElementById('createTabGroupBtn');
+            if (createTabGroupBtn) {
+                createTabGroupBtn.disabled = !e.target.value.trim();
             }
         });
     }
@@ -131,16 +131,16 @@ export function setupDOMElements(createNewSpace, createNewTab) {
     console.log('✅ setupDOMElements completed successfully');
 }
 
-export function showSpaceNameInput() {
-    const addSpaceBtn = document.getElementById('addSpaceBtn');
-    const addSpaceInputContainer = document.getElementById('addSpaceInputContainer');
+export function showTabGroupNameInput() {
+    const addTabGroupBtn = document.getElementById('addTabGroupBtn');
+    const addTabGroupInputContainer = document.getElementById('addTabGroupInputContainer');
 
-    addSpaceBtn.classList.toggle('active');
-    addSpaceInputContainer.classList.toggle('visible');
+    addTabGroupBtn.classList.toggle('active');
+    addTabGroupInputContainer.classList.toggle('visible');
     const errorPopup = document.createElement('div');
     errorPopup.className = 'error-popup';
-    errorPopup.textContent = 'A space with this name already exists';
-    const inputContainer = document.getElementById('addSpaceInputContainer');
+    errorPopup.textContent = 'A tab group with this name already exists';
+    const inputContainer = document.getElementById('addTabGroupInputContainer');
     inputContainer.appendChild(errorPopup);
 
     // Remove the error message after 3 seconds
@@ -161,28 +161,28 @@ export function activateTabInDOM(tabId) {
     }
 }
 
-export function activateSpaceInDOM(spaceId, spaces, updateSpaceSwitcher) {
-    // Show/hide space containers
-    document.querySelectorAll('.space').forEach(s => {
-        const isActive = s.dataset.spaceId === String(spaceId);
-        s.classList.toggle('active', isActive);
-        s.style.display = isActive ? 'block' : 'none';
+export function activateTabGroupInDOM(groupId, tabGroups, updateTabGroupSwitcher) {
+    // Show/hide tab group containers
+    document.querySelectorAll('.tab-group').forEach(g => {
+        const isActive = g.dataset.groupId === String(groupId);
+        g.classList.toggle('active', isActive);
+        g.style.display = isActive ? 'block' : 'none';
     });
 
-    // Get space color and update sidebar container background
-    const space = spaces.find(s => s.id === spaceId);
-    if (space) {
+    // Get tab group color and update sidebar container background
+    const tabGroup = tabGroups.find(g => g.id === groupId);
+    if (tabGroup) {
         // Update background color
         const sidebarContainer = document.getElementById('sidebar-container');
-        sidebarContainer.style.setProperty('--space-bg-color', `var(--chrome-${space.color}-color, rgba(255, 255, 255, 0.1))`);
-        sidebarContainer.style.setProperty('--space-bg-color-dark', `var(--chrome-${space.color}-color-dark, rgba(255, 255, 255, 0.1))`);
+        sidebarContainer.style.setProperty('--group-bg-color', `var(--chrome-${tabGroup.color}-color, rgba(255, 255, 255, 0.1))`);
+        sidebarContainer.style.setProperty('--group-bg-color-dark', `var(--chrome-${tabGroup.color}-color-dark, rgba(255, 255, 255, 0.1))`);
     }
 
-    // Update space switcher
-    updateSpaceSwitcher();
+    // Update tab group switcher
+    updateTabGroupSwitcher();
 }
 
-export function showTabContextMenu(x, y, tab, isPinned, isBookmarkOnly, tabElement, closeTab, spaces, moveTabToSpace, setActiveSpace, allBookmarkSpaceFolders, createSpaceFromInactive) {
+export function showTabContextMenu(x, y, tab, isPinned, isBookmarkOnly, tabElement, closeTab, tabGroups, moveTabToTabGroup, setActiveTabGroup, allBookmarkTabGroupFolders, createTabGroupFromInactive) {
     // Remove any existing context menus
     const existingMenu = document.getElementById('tab-context-menu');
     if (existingMenu) {
@@ -198,7 +198,7 @@ export function showTabContextMenu(x, y, tab, isPinned, isBookmarkOnly, tabEleme
 
     // --- Menu Items ---
 
-    // Only show these options for actual tabs that are part of a space
+    // Only show these options for actual tabs that are part of a tab group
     if (!isBookmarkOnly) {
         // Add/Remove from Favorites option
         const favoritesOption = document.createElement('div');
@@ -481,9 +481,9 @@ export function showTabContextMenu(x, y, tab, isPinned, isBookmarkOnly, tabEleme
     document.addEventListener('click', closeContextMenu, { capture: true });
 }
 
-export async function showArchivedTabsPopup(activeSpaceId) {
-    const spaceElement = document.querySelector(`[data-space-id="${activeSpaceId}"]`);
-    const popup = spaceElement.querySelector('.archived-tabs-popup');
+export async function showArchivedTabsPopup(activeGroupId) {
+    const tabGroupElement = document.querySelector(`[data-group-id="${activeGroupId}"]`);
+    const popup = tabGroupElement.querySelector('.archived-tabs-popup');
     const list = popup.querySelector('.archived-tabs-list');
     const message = popup.querySelector('.no-archived-tabs-message');
     list.innerHTML = '';
@@ -607,13 +607,13 @@ export async function showArchivedTabsPopup(activeSpaceId) {
     }
 }
 
-export function setupQuickPinListener(moveTabToSpace, moveTabToTemp) {
+export function setupQuickPinListener(moveTabToTabGroup, moveTabToTemp) {
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-        if (request.command === "quickPinToggle" || request.command === "toggleSpacePin") {
+        if (request.command === "quickPinToggle" || request.command === "toggleTabGroupPin") {
             console.log(`[QuickPin] Received command: ${request.command}`, { request });
-            chrome.storage.local.get('spaces', function(result) {
-                const spaces = result.spaces || [];
-                console.log("[QuickPin] Loaded spaces from storage:", spaces);
+            chrome.storage.local.get('tabGroups', function(result) {
+                const tabGroups = result.tabGroups || [];
+                console.log("[QuickPin] Loaded tab groups from storage:", tabGroups);
 
                 const getTabAndToggle = (tabToToggle) => {
                     if (!tabToToggle) {
@@ -622,25 +622,25 @@ export function setupQuickPinListener(moveTabToSpace, moveTabToTemp) {
                     }
                     console.log("[QuickPin] Toggling pin state for tab:", tabToToggle);
                     
-                    const spaceWithTempTab = spaces.find(space =>
-                        space.temporaryTabs.includes(tabToToggle.id)
+                    const tabGroupWithTempTab = tabGroups.find(tabGroup =>
+                        tabGroup.temporaryTabs.includes(tabToToggle.id)
                     );
 
-                    if (spaceWithTempTab) {
-                        console.log(`[QuickPin] Tab ${tabToToggle.id} is a temporary tab in space "${spaceWithTempTab.name}". Adding to bookmark.`);
-                        moveTabToSpace(tabToToggle.id, spaceWithTempTab.id, true);
+                    if (tabGroupWithTempTab) {
+                        console.log(`[QuickPin] Tab ${tabToToggle.id} is a temporary tab in tab group "${tabGroupWithTempTab.name}". Adding to bookmark.`);
+                        moveTabToTabGroup(tabToToggle.id, tabGroupWithTempTab.id, true);
                         // moveTabToPinned removed - pinned section removed
                     } else {
-                        const spaceWithBookmark = spaces.find(space =>
-                            space.spaceBookmarks.includes(tabToToggle.id)
+                        const tabGroupWithBookmark = tabGroups.find(tabGroup =>
+                            tabGroup.tabGroupBookmarks.includes(tabToToggle.id)
                         );
 
-                        if (spaceWithBookmark) {
-                            console.log(`[QuickPin] Tab ${tabToToggle.id} is a bookmarked tab in space "${spaceWithBookmark.name}". Unpinning it.`);
-                            moveTabToSpace(tabToToggle.id, spaceWithBookmark.id, false);
-                            moveTabToTemp(spaceWithBookmark, tabToToggle);
+                        if (tabGroupWithBookmark) {
+                            console.log(`[QuickPin] Tab ${tabToToggle.id} is a bookmarked tab in tab group "${tabGroupWithBookmark.name}". Unpinning it.`);
+                            moveTabToTabGroup(tabToToggle.id, tabGroupWithBookmark.id, false);
+                            moveTabToTemp(tabGroupWithBookmark, tabToToggle);
                         } else {
-                            console.warn(`[QuickPin] Tab ${tabToToggle.id} not found in any space as temporary or bookmarked.`);
+                            console.warn(`[QuickPin] Tab ${tabToToggle.id} not found in any tab group as temporary or bookmarked.`);
                         }
                     }
                 };
@@ -650,8 +650,8 @@ export function setupQuickPinListener(moveTabToSpace, moveTabToTemp) {
                     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
                         getTabAndToggle(tabs[0]);
                     });
-                } else if (request.command === "toggleSpacePin" && request.tabId) {
-                    console.log(`[QuickPin] Handling toggleSpacePin for tabId: ${request.tabId}`);
+                } else if (request.command === "toggleTabGroupPin" && request.tabId) {
+                    console.log(`[QuickPin] Handling toggleTabGroupPin for tabId: ${request.tabId}`);
                     chrome.tabs.get(request.tabId, function(tab) {
                         getTabAndToggle(tab);
                     });

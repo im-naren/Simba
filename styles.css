@@ -161,12 +161,12 @@ h3 {
 }
 
 /* Search Results States */
-.space-content.no-search-results {
+.tab-group-content.no-search-results {
     opacity: 0.3;
     pointer-events: none;
 }
 
-.space-content.no-search-results::after {
+.tab-group-content.no-search-results::after {
     content: 'No matches found';
     display: block;
     text-align: center;
@@ -729,7 +729,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     font-style: italic;
 }
 
-.spaces-list {
+.tab-groups-list {
     padding-top: 0;
 }
 
@@ -737,7 +737,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     margin: 0 8px 16px 8px;
 }
 
-.space-switcher-container {
+.tab-group-switcher-container {
     margin: 0 8px 16px 8px;
 }
 
@@ -798,7 +798,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     display: block;
 }
 
-.spaces-list {
+.tab-groups-list {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -806,21 +806,21 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     overflow-y: scroll;
 }
 
-.spaces-list::-webkit-scrollbar {
+.tab-groups-list::-webkit-scrollbar {
     display: none;
 }
 
-.space {
+.tab-group {
     /* background-color: rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 16px; */
 }
 
-.space-header {
+.tab-group-header {
     display: none !important;
 }
 
-.space-name {
+.tab-group-name {
     flex-grow: 1;
     background: none;
     border: none;
@@ -834,16 +834,16 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     transition: background-color 0.2s, color 0.2s;
 }
 
-.space-name:focus {
+.tab-group-name:focus {
     background-color: var(--bg-hover);
     outline: none;
 }
 
-.space-options-container {
+.tab-group-options-container {
     position: relative;
 }
 
-.space-options {
+.tab-group-options {
     background: none;
     border: none;
     font-size: 20px;
@@ -854,12 +854,12 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     transition: background-color 0.2s, color 0.2s;
 }
 
-.space-options:hover {
+.tab-group-options:hover {
     background-color: var(--bg-hover);
     color: var(--text-primary);
 }
 
-.space-options-dropdown {
+.tab-group-options-dropdown {
     position: absolute;
     top: 100%;
     right: 0;
@@ -873,11 +873,11 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     border: 1px solid var(--border-color);
 }
 
-.space-options-container:hover .space-options-dropdown {
+.tab-group-options-container:hover .tab-group-options-dropdown {
     display: flex;
 }
 
-.space-options-dropdown button {
+.tab-group-options-dropdown button {
     background: none;
     border: none;
     padding: 8px 16px;
@@ -888,15 +888,15 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     transition: background-color 0.2s;
 }
 
-.space-options-dropdown button:hover {
+.tab-group-options-dropdown button:hover {
     background-color: var(--bg-hover);
 }
 
-.space-color-select {
+.tab-group-color-select {
     display: none;
 }
 
-.space-color-select option {
+.tab-group-color-select option {
     appearance: none;
     -webkit-appearance: none;
 }
@@ -911,7 +911,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     border-radius: 8px;
 }
 
-.create-space-picker {
+.create-tab-group-picker {
     width: 100%;
     display: flex;
     background: none;
@@ -1133,7 +1133,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     display: none;
 }
 
-.space-content {
+.tab-group-content {
     display: flex;
     flex-direction: column;
     transition: all 0.3s ease;
@@ -1141,7 +1141,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     z-index: 1;
 }
 
-.space-content.hidden {
+.tab-group-content.hidden {
     opacity: 0;
     z-index: 0;
 }
@@ -1475,13 +1475,13 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     margin: 0;
 }
 
-.create-space-container {
+.create-tab-group-container {
     width: 100%;
     display: flex;
     gap: 8px;
 }
 
-.add-space-btn {
+.add-tab-group-btn {
     background: none;
     border: none;
     color: #666;
@@ -1494,11 +1494,11 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     font-size: 14px;
 }
 
-.add-space-btn:hover {
+.add-tab-group-btn:hover {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-.add-space-btn span {
+.add-tab-group-btn span {
     font-size: 18px;
 }
 
@@ -1526,7 +1526,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     font-size: 20px;
 }
 
-.space-switcher {
+.tab-group-switcher {
     display: flex;
     gap: 8px;
     justify-content: flex-start;
@@ -1540,11 +1540,11 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     mask-image: linear-gradient(to right, rgb(0, 0, 0), rgb(0, 0, 0), rgb(0, 0, 0), rgb(0, 0, 0), rgba(0, 0, 0, 0));
 }
 
-.space-switcher::-webkit-scrollbar {
+.tab-group-switcher::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
 }
 
-.space-switcher button {
+.tab-group-switcher button {
     min-width: 32px;
     max-width: none;
     width: auto;
@@ -1564,11 +1564,11 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     transition: background-color 0.3s;
 }
 
-.space-switcher button:hover {
+.tab-group-switcher button:hover {
     background-color: rgba(255, 255, 255, 0.3);
 }
 
-.space-switcher button.active {
+.tab-group-switcher button.active {
     background-color: #ffffff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -1732,12 +1732,12 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     padding: 4px;
 }
 
-.space-switcher-container {
+.tab-group-switcher-container {
     position: relative;
     margin-top: 8px;
 }
 
-.add-space-toggle {
+.add-tab-group-toggle {
     position: absolute;
     right: 0;
     top: 8px;
@@ -1755,15 +1755,15 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     transition: transform 0.3s ease;
 }
 
-.add-space-toggle.active {
+.add-tab-group-toggle.active {
     transform: rotate(45deg);
 }
 
-.add-space-toggle:hover {
+.add-tab-group-toggle:hover {
     background-color: rgba(255, 255, 255, 1);
 }
 
-.add-space-input-container {
+.add-tab-group-input-container {
     flex-direction: column;
     display: flex;
     gap: 8px;
@@ -1773,7 +1773,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     transition: all 0.3s ease;
 }
 
-.add-space-input-container.visible {
+.add-tab-group-input-container.visible {
     opacity: 1;
     height: 5rem;
 }
@@ -2607,14 +2607,14 @@ body.dark-mode .tree-subgroup-tabs::before {
     align-items: center;
 }
 
-.all-spaces-tabs-container {
+.all-tab-groups-tabs-container {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-/* Space Tab Groups (for showing all spaces) */
-.space-tab-group {
+/* Tab Group Sections (for showing all tab groups) */
+.tab-group-section {
     margin-bottom: 12px;
     border-radius: 8px;
     overflow: hidden;
@@ -2622,7 +2622,7 @@ body.dark-mode .tree-subgroup-tabs::before {
     border: 1px solid var(--border-color);
 }
 
-.space-tab-group-header {
+.tab-group-section-header {
     display: flex;
     align-items: center;
     padding: 10px 12px;
@@ -2633,11 +2633,11 @@ body.dark-mode .tree-subgroup-tabs::before {
     border-radius: 7px 7px 0 0;
 }
 
-.space-tab-group-header:hover {
+.tab-group-section-header:hover {
     background: var(--bg-hover);
 }
 
-.space-tab-group-name {
+.tab-group-section-name {
     flex: 1;
     font-weight: 600;
     font-size: 14px;
@@ -2648,21 +2648,21 @@ body.dark-mode .tree-subgroup-tabs::before {
     white-space: nowrap;
 }
 
-.space-tab-group-tabs {
+.tab-group-section-tabs {
     display: none;
     padding: 4px;
 }
 
-.space-tab-group-tabs.expanded {
+.tab-group-section-tabs.expanded {
     display: flex;
     flex-direction: column;
 }
 
-.space-tab-group-tabs .tab {
+.tab-group-section-tabs .tab {
     margin-bottom: 2px;
 }
 
-.space-tab-group-tabs .tab:last-child {
+.tab-group-section-tabs .tab:last-child {
     margin-bottom: 0;
 }
 

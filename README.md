@@ -220,8 +220,8 @@ This project is open source. Feel free to use, modify, and distribute.
 
 ## 🙏 Acknowledgments
 
-- **Arc Browser** - Inspiration for the space management system
-- **Arcify** - Original sidebar implementation ([GitHub](https://github.com/nisargkolhe/arcify.git))
+- **Arc Browser** - Inspiration for the tab group management system
+- **Chrome Tab Groups API** - Foundation for organized tab management
 
 ## 📧 Support
 

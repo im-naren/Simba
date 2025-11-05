@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcify: Arc like vertical tab spacesr</title>
+    <title>Simba Tab Manager</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -232,19 +232,19 @@
             </div>
         </div>
         
-        <div class="spaces-list" id="spacesList">
-            <!-- Spaces will be dynamically added here -->
+        <div class="tab-groups-list" id="tabGroupsList">
+            <!-- Tab Groups will be dynamically added here -->
         </div>
         
-        <div class="space-switcher-container" style="display: none;">
-            <div class="space-switcher" id="spaceSwitcher">
-                <!-- Space switcher buttons will be added here -->
+        <div class="tab-group-switcher-container" style="display: none;">
+            <div class="tab-group-switcher" id="tabGroupSwitcher">
+                <!-- Tab Group switcher buttons will be added here -->
             </div>
-            <button class="add-space-toggle" id="addSpaceBtn" title="Create a new space">
+            <button class="add-tab-group-toggle" id="addTabGroupBtn" title="Create a new tab group">
                 <span>+</span>
             </button>
-            <div class="add-space-input-container" id="addSpaceInputContainer">
-                <div class="color-picker-grid create-space-picker" id="createSpaceColorSwatch" value="grey">
+            <div class="add-tab-group-input-container" id="addTabGroupInputContainer">
+                <div class="color-picker-grid create-tab-group-picker" id="createTabGroupColorSwatch" value="grey">
                     <div class="color-swatch selected" data-color="grey"></div>
                     <div class="color-swatch" data-color="blue"></div>
                     <div class="color-swatch" data-color="red"></div>
@@ -254,9 +254,9 @@
                     <div class="color-swatch" data-color="purple"></div>
                     <div class="color-swatch" data-color="cyan"></div>
                 </div>
-                <div class="create-space-container">
-                    <input type="text" id="newSpaceName" placeholder="Enter space name">
-                    <select id="spaceColor" class="space-color-select">
+                <div class="create-tab-group-container">
+                    <input type="text" id="newTabGroupName" placeholder="Enter tab group name">
+                    <select id="tabGroupColor" class="tab-group-color-select">
                         <option value="grey">Grey</option>
                         <option value="blue">Blue</option>
                         <option value="red">Red</option>
@@ -266,24 +266,24 @@
                         <option value="purple">Purple</option>
                         <option value="cyan">Cyan</option>
                     </select>
-                    <button id="createSpaceBtn" disabled>Create</button>
+                    <button id="createTabGroupBtn" disabled>Create</button>
                 </div>
             </div>
         </div>
     </div>
-    <template id="spaceTemplate">
-        <div class="space">
-            <div class="space-header">
-                <input type="text" class="space-name" placeholder="Space Name">
+    <template id="tabGroupTemplate">
+        <div class="tab-group">
+            <div class="tab-group-header">
+                <input type="text" class="tab-group-name" placeholder="Tab Group Name">
                 <button id="archive-button" class="sidebar-button" title="Archived Tabs">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="svg-icon"><path d="M475 256c0-30-5-58-17-85-12-27-27-51-47-70-19-20-43-35-70-47-27-12-55-17-85-17-33 0-64 6-93 20-30 14-55 34-76 59-1 2-2 4-2 6 0 3 1 4 3 6l39 39c2 2 4 3 7 3 3 0 5-2 7-3 13-19 31-33 51-42 20-10 41-15 64-15 20 0 39 4 57 11 18 8 33 18 46 32 14 13 24 28 32 46 7 18 11 37 11 57 0 20-4 39-11 57-8 18-18 33-32 46-13 14-28 24-46 32-18 7-37 11-57 11-19 0-37-3-54-10-17-7-32-16-45-29l39-39c6-6 7-13 4-20-4-8-9-11-17-11l-128 0c-5 0-9 1-13 5-4 4-5 8-5 13l0 128c0 8 3 13 11 17 7 3 14 2 20-4l37-37c20 19 44 34 70 45 26 10 53 15 81 15 30 0 58-5 85-17 27-12 51-27 70-47 20-19 35-43 47-70 12-27 17-55 17-85z m-182 82l0-128c0-2-1-5-3-6-2-2-4-3-7-3l-91 0c-3 0-5 1-7 3-1 1-2 4-2 6l0 19c0 2 1 4 2 6 2 2 4 3 7 3l64 0 0 100c0 3 1 5 3 7 1 2 3 2 6 2l18 0c3 0 5 0 7-2 2-2 3-4 3-7z"/></svg>
                 </button>
-                <div class="space-options-container">
-                    <button id="space-options" class="space-options" title="Options">
+                <div class="tab-group-options-container">
+                    <button id="tab-group-options" class="tab-group-options" title="Options">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="svg-icon"><path d="M296 376c0 22-18 40-40 40-22 0-40-18-40-40 0-22 18-40 40-40 22 0 40 18 40 40z m0-240c0 22-18 40-40 40-22 0-40-18-40-40 0-22 18-40 40-40 22 0 40 18 40 40z m0 120c0 22-18 40-40 40-22 0-40-18-40-40 0-22 18-40 40-40 22 0 40 18 40 40z"/></svg>
                     </button>
-                    <div class="space-options-dropdown">
-                        <select class="space-color-select" id="spaceColorSelect">
+                    <div class="tab-group-options-dropdown">
+                        <select class="tab-group-color-select" id="tabGroupColorSelect">
                             <option value="grey">Grey</option>
                             <option value="blue">Blue</option>
                             <option value="red">Red</option>
@@ -293,7 +293,7 @@
                             <option value="purple">Purple</option>
                             <option value="cyan">Cyan</option>
                         </select>
-                        <div class="color-picker-grid" id="spaceOptionColorSwatch">
+                        <div class="color-picker-grid" id="tabGroupOptionColorSwatch">
                             <div class="color-swatch" data-color="grey"></div>
                             <div class="color-swatch" data-color="blue"></div>
                             <div class="color-swatch" data-color="red"></div>
@@ -304,7 +304,7 @@
                             <div class="color-swatch" data-color="cyan"></div>
                         </div>
                         <button class="new-folder-btn">New Folder</button>
-                        <button class="delete-space-btn">Delete Space</button>
+                        <button class="delete-tab-group-btn">Delete Tab Group</button>
                     </div>
                 </div>
             </div>
@@ -315,7 +315,7 @@
                     <div class="no-archived-tabs-message">No archived tabs.</div>
                 </div>
             </div>
-            <div id="space-content" class="space-content">
+            <div id="tab-group-content" class="tab-group-content">
                 <div class="bookmarks-section">
                     <div class="bookmarks-header">
                         <button class="section-toggle bookmarks-toggle collapsed" title="Toggle Bookmarks Section">
