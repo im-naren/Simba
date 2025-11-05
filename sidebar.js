@@ -2344,8 +2344,8 @@ function createTabGroupElement(tabGroup) {
     // Pinned section completely removed
     
     // Set up bookmarks section toggle
-    const bookmarksToggle = document.querySelector(`[data-group-id="${space.id}"] .bookmarks-toggle`);
-    const bookmarksContent = document.querySelector(`[data-group-id="${space.id}"] .bookmarks-content`);
+    const bookmarksToggle = document.querySelector(`[data-group-id="${tabGroup.id}"] .bookmarks-toggle`);
+    const bookmarksContent = document.querySelector(`[data-group-id="${tabGroup.id}"] .bookmarks-content`);
     
     console.log('Setting up bookmarks toggle for tabGroup:', tabGroup.id, 'Toggle found:', !!bookmarksToggle, 'Content found:', !!bookmarksContent);
     
@@ -2353,12 +2353,12 @@ function createTabGroupElement(tabGroup) {
         // Load saved collapsed state from localStorage, default to collapsed (true)
         chrome.storage.local.get(['bookmarksSectionCollapsed'], (result) => {
             const collapsedTabGroups = result.bookmarksSectionCollapsed || {};
-            const isCollapsed = collapsedTabGroups[space.id] !== undefined ? collapsedTabGroups[space.id] : true; // Default collapsed
+            const isCollapsed = collapsedTabGroups[tabGroup.id] !== undefined ? collapsedTabGroups[tabGroup.id] : true; // Default collapsed
             
             console.log('Loading bookmarks collapsed state for tabGroup:', tabGroup.id, 'isCollapsed:', isCollapsed);
             
             // Also apply to tree view container
-            const bookmarksTreeContainer = document.querySelector(`[data-group-id="${space.id}"] .bookmarks-tree-container`);
+            const bookmarksTreeContainer = document.querySelector(`[data-group-id="${tabGroup.id}"] .bookmarks-tree-container`);
             
             if (isCollapsed) {
                 bookmarksToggle.classList.add('collapsed');
@@ -2380,7 +2380,7 @@ function createTabGroupElement(tabGroup) {
             bookmarksContent.classList.toggle('collapsed');
             
             // Also toggle tree view container if it exists
-            const bookmarksTreeContainer = document.querySelector(`[data-group-id="${space.id}"] .bookmarks-tree-container`);
+            const bookmarksTreeContainer = document.querySelector(`[data-group-id="${tabGroup.id}"] .bookmarks-tree-container`);
             if (bookmarksTreeContainer) {
                 bookmarksTreeContainer.classList.toggle('collapsed');
             }
@@ -2390,7 +2390,7 @@ function createTabGroupElement(tabGroup) {
             // Save collapsed state to localStorage
             chrome.storage.local.get(['bookmarksSectionCollapsed'], (result) => {
                 const collapsedTabGroups = result.bookmarksSectionCollapsed || {};
-                collapsedTabGroups[space.id] = isCollapsed;
+                collapsedTabGroups[tabGroup.id] = isCollapsed;
                 chrome.storage.local.set({ bookmarksSectionCollapsed: collapsedTabGroups });
                 console.log('Saved bookmarks collapsed state:', collapsedTabGroups);
             });
@@ -2634,7 +2634,7 @@ async function renderTreeView(groupId) {
         
         // Get all temporary tabs for this tabGroup
         const tabGroup = tabGroups.find(s => s.id === groupId);
-        console.log('Space found:', !!space, 'Space:', tabGroup);
+        console.log('Tab Group found:', !!tabGroup, 'Tab Group:', tabGroup);
         if (!tabGroup) return;
         
         // Get all tabs in the current window (not by groupId since we're in unified view)
@@ -3456,7 +3456,7 @@ async function updateTabGroupSwitcher() {
     });
 
 
-    tabGroups.forEach(space => {
+    tabGroups.forEach(tabGroup => {
         const button = document.createElement('button');
         button.textContent = tabGroup.name;
         button.dataset.groupId = tabGroup.id; // Store tabGroup ID
@@ -3499,7 +3499,7 @@ async function updateTabGroupSwitcher() {
     const arcifyFolder = await LocalStorage.getOrCreateArcifyFolder();
     const tabGroupFolders = await chrome.bookmarks.getChildren(arcifyFolder.id);
     tabGroupFolders.forEach(tabGroupFolder => {
-        if(tabGroups.find(space => tabGroup.name == tabGroupFolder.title)) {
+        if(tabGroups.find(tg => tg.name == tabGroupFolder.title)) {
             return;
         } else {
             const button = document.createElement('button');
@@ -3642,7 +3642,7 @@ async function moveTabToTemp(tabGroup, tab) {
 
     // Move tab from bookmarks to temporary tabs in tabGroup data
     tabGroup.tabGroupBookmarks = tabGroup.tabGroupBookmarks.filter(id => id !== tab.id);
-    if (!space.temporaryTabs.includes(tab.id)) {
+    if (!tabGroup.temporaryTabs.includes(tab.id)) {
         tabGroup.temporaryTabs.push(tab.id);
     }
 
@@ -3673,13 +3673,13 @@ async function setupDragAndDrop(tempContainer) {
                     isDraggingTab = true;
                     const tabId = parseInt(draggingElement.dataset.tabId);
                     chrome.tabs.get(tabId, async (tab) => {
-                        const groupId = container.closest('.space').dataset.groupId;
+                        const groupId = container.closest('.tab-group').dataset.groupId;
                         const tabGroup = tabGroups.find(s => s.id === parseInt(groupId));
 
-                        if (space && tab) {
+                        if (tabGroup && tab) {
                             // Move tab from temporary to folder in tabGroup data
                             tabGroup.temporaryTabs = tabGroup.temporaryTabs.filter(id => id !== tabId);
-                            if (!space.tabGroupBookmarks.includes(tabId)) {
+                            if (!tabGroup.tabGroupBookmarks.includes(tabId)) {
                                 tabGroup.tabGroupBookmarks.push(tabId);
                             }
 
@@ -3744,7 +3744,7 @@ async function setupDragAndDrop(tempContainer) {
                     chrome.tabs.get(tabId, async (tab) => {
                         const tabGroup = tabGroups.find(s => s.id === parseInt(activeGroupId));
 
-                        if (space && tab) {
+                        if (tabGroup && tab) {
                             // Remove tab from bookmarks if it exists
                             moveTabToTemp(tabGroup, tab);
                         }
@@ -3813,7 +3813,7 @@ async function loadTabs(tabGroup, tempContainer) {
         const tabs = await chrome.tabs.query({});
 
         // Get bookmarked tab URLs to exclude them
-        const tabGroupElement = document.querySelector(`[data-group-id="${space.id}"]`);
+        const tabGroupElement = document.querySelector(`[data-group-id="${tabGroup.id}"]`);
         const bookmarksContainer = tabGroupElement?.querySelector('.bookmarks-content .bookmarks-list');
         const bookmarkedTabURLs = Array.from(bookmarksContainer?.querySelectorAll('.bookmark-item[data-url]') || [])
             .map(el => el.dataset.url);
@@ -4280,7 +4280,7 @@ async function createNewTabGroup() {
         const groupName = tabGroupNameInput.value.trim();
         const groupColor = tabGroupColorSelect.value;
 
-        if (!groupName || tabGroups.some(space => tabGroup.name.toLowerCase() === groupName.toLowerCase())) {
+        if (!groupName || tabGroups.some(tg => tg.name.toLowerCase() === groupName.toLowerCase())) {
             const errorPopup = document.createElement('div');
             errorPopup.className = 'error-popup';
             errorPopup.textContent = 'A tabGroup with this name already exists';
@@ -4334,7 +4334,7 @@ function cleanTemporaryTabs(groupId) {
     console.log('Cleaning temporary tabs for tabGroup:', groupId);
     const tabGroup = tabGroups.find(s => s.id === groupId);
     if (tabGroup) {
-        console.log("space.temporaryTabs", tabGroup.temporaryTabs);
+        console.log("tabGroup.temporaryTabs", tabGroup.temporaryTabs);
 
         // iterate through temporary tabs and remove them with index
         tabGroup.temporaryTabs.forEach((tabId, index) => {
@@ -4366,7 +4366,7 @@ function handleTabCreated(tab) {
 
         if (tabGroup) {
             // Just track the tab, don't move it to any group
-            if (!space.temporaryTabs.includes(tab.id)) {
+            if (!tabGroup.temporaryTabs.includes(tab.id)) {
                 tabGroup.temporaryTabs.push(tab.id);
                 saveTabGroups();
             }
@@ -4417,9 +4417,9 @@ function handleTabUpdate(tabId, changeInfo, tab) {
             if (changeInfo.pinned !== undefined) {
                 if (changeInfo.pinned) {
                     // Find which tabGroup this tab belongs to
-                    const tabGroupWithTab = tabGroups.find(space =>
-                        tabGroup.tabGroupBookmarks.includes(tabId) ||
-                        tabGroup.temporaryTabs.includes(tabId)
+                    const tabGroupWithTab = tabGroups.find(tg =>
+                        tg.tabGroupBookmarks.includes(tabId) ||
+                        tg.temporaryTabs.includes(tabId)
                     );
                     
                     // If tab was in a tabGroup and was bookmarked, remove it from bookmarks
@@ -4434,9 +4434,9 @@ function handleTabUpdate(tabId, changeInfo, tab) {
                     }
                     
                     // Remove tab from all tabGroups data when it becomes pinned
-                    tabGroups.forEach(space => {
-                        tabGroup.tabGroupBookmarks = tabGroup.tabGroupBookmarks.filter(id => id !== tabId);
-                        tabGroup.temporaryTabs = tabGroup.temporaryTabs.filter(id => id !== tabId);
+                    tabGroups.forEach(tg => {
+                        tg.tabGroupBookmarks = tg.tabGroupBookmarks.filter(id => id !== tabId);
+                        tg.temporaryTabs = tg.temporaryTabs.filter(id => id !== tabId);
                     });
                     saveTabGroups();
                     tabElement.remove(); // Remove from tabGroup
@@ -4530,9 +4530,9 @@ async function handleTabRemove(tabId) {
         
         if (!tabElement) {
             // Tab element not in list view, but still clean up data
-            tabGroups.forEach(space => {
-                tabGroup.tabGroupBookmarks = tabGroup.tabGroupBookmarks.filter(id => id !== tabId);
-                tabGroup.temporaryTabs = tabGroup.temporaryTabs.filter(id => id !== tabId);
+            tabGroups.forEach(tg => {
+                tg.tabGroupBookmarks = tg.tabGroupBookmarks.filter(id => id !== tabId);
+                tg.temporaryTabs = tg.temporaryTabs.filter(id => id !== tabId);
             });
             saveTabGroups();
             return;
@@ -4542,9 +4542,9 @@ async function handleTabRemove(tabId) {
         const isPinned = activeTabGroup?.tabGroupBookmarks.includes(tabId) || false;
 
         // Remove tab from tabGroups
-        tabGroups.forEach(space => {
-            tabGroup.tabGroupBookmarks = tabGroup.tabGroupBookmarks.filter(id => id !== tabId);
-            tabGroup.temporaryTabs = tabGroup.temporaryTabs.filter(id => id !== tabId);
+        tabGroups.forEach(tg => {
+            tg.tabGroupBookmarks = tg.tabGroupBookmarks.filter(id => id !== tabId);
+            tg.temporaryTabs = tg.temporaryTabs.filter(id => id !== tabId);
         });
 
         // Remove the tab element from the DOM
@@ -4581,9 +4581,9 @@ function handleTabActivated(activeInfo) {
 
         console.log('Tab activated:', activeInfo);
         // Find which tabGroup contains this tab
-        const tabGroupWithTab = tabGroups.find(space =>
-            tabGroup.tabGroupBookmarks.includes(activeInfo.tabId) ||
-            tabGroup.temporaryTabs.includes(activeInfo.tabId)
+        const tabGroupWithTab = tabGroups.find(tg =>
+            tg.tabGroupBookmarks.includes(activeInfo.tabId) ||
+            tg.temporaryTabs.includes(activeInfo.tabId)
         );
         console.log("found tabGroup", tabGroupWithTab);
 
@@ -4619,7 +4619,7 @@ async function deleteTabGroup(groupId) {
     const tabGroup = tabGroups.find(s => s.id === groupId);
     if (tabGroup) {
         // Close all tabs in the tabGroup
-        [...space.tabGroupBookmarks, ...space.temporaryTabs].forEach(tabId => {
+        [...tabGroup.tabGroupBookmarks, ...tabGroup.temporaryTabs].forEach(tabId => {
             chrome.tabs.remove(tabId);
         });
 
