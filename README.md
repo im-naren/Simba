@@ -29,6 +29,7 @@
 
 - **Quick Actions** - One-click tab switching, pinning, and closing
 - **Tree View** - Group tabs by domain for better organization and overview
+- **Tab Groups Integration** - Native Chrome tab groups support with context menu access
 - **Keyboard Shortcuts** - `Ctrl+E` (Cmd+E on Mac) to toggle sidebar, `Ctrl+D` to quick pin/unpin
 - **Search & Filter** - Find tabs instantly across all spaces
 - **Drag & Drop** - Easily move tabs between spaces and folders
@@ -87,6 +88,11 @@ The extension will soon be available on the Chrome Web Store for one-click insta
   - Click domain header to expand/collapse groups
   - See tab count per domain at a glance
   - All tab actions (switch, close, context menu) work in tree view
+- **Tab Groups**: Right-click any tab to access Chrome's native tab groups
+  - Move tabs to existing groups with color indicators
+  - Create new tab groups directly from context menu
+  - Remove tabs from groups
+  - All group operations sync with Chrome's native tab groups
 
 **Creating Folders:**
 - Click the space options menu (⋮) and select "New Folder"

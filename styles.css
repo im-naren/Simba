@@ -561,7 +561,7 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     flex-direction: column;
     height: 100%;
     overflow-y: hidden;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-container > *:not(.sidebar-header):not(.header-toolbar) {
@@ -585,8 +585,13 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
 }
 
 .favorites-header h3 {
+    flex: 1;
     margin-left: 0;
     margin-bottom: 0;
+}
+
+.favorites-header .toolbar-btn {
+    margin-left: auto;
 }
 
 .favorites-content {
@@ -640,6 +645,14 @@ body.dark-mode .settings-toggle .ios-toggle:checked + .toggle-label {
     background: var(--bg-active);
     border-color: var(--text-primary);
     box-shadow: 0 2px 6px var(--shadow-color);
+}
+
+.favorite-item.favorite-default {
+    opacity: 0.9;
+}
+
+.favorite-item.favorite-default .favorite-favicon {
+    border: 1px solid var(--border-color);
 }
 
 .favorite-favicon {
@@ -2832,4 +2845,393 @@ body.dark-mode {
         --chrome-purple-color-dark: #7c668e;
         --chrome-cyan-color-dark: #55858b;
     }
+}
+
+/* Favorites Settings Panel */
+.favorites-settings-panel {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 16px var(--shadow-color);
+    z-index: 2000;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.favorites-settings-panel.visible {
+    right: 0;
+}
+
+.favorites-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.favorites-settings-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.favorites-settings-close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.favorites-settings-close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.favorites-settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.favorites-settings-section {
+    margin-bottom: 24px;
+}
+
+.favorites-settings-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.favorites-settings-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.favorites-apps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.favorites-app-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    transition: all 0.2s ease;
+}
+
+.favorites-app-item:hover {
+    background: var(--bg-hover);
+}
+
+.favorites-app-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.favorites-app-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.favorites-app-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.favorites-app-toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.favorites-app-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.favorites-app-toggle .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: 0.3s;
+    border-radius: 34px;
+}
+
+.favorites-app-toggle .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.favorites-app-toggle input:checked + .toggle-slider {
+    background-color: #8bb3f3;
+}
+
+.favorites-app-toggle input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+.favorites-app-toggle input:disabled + .toggle-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Bookmarks Section Header */
+.bookmarks-section-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.bookmarks-section-header:hover {
+    background: var(--bg-hover);
+}
+
+.section-header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-header-content svg {
+    flex-shrink: 0;
+    stroke: var(--text-secondary);
+}
+
+.section-header-content h3 {
+    flex: 1;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.section-header-content .toolbar-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.bookmarks-section-header:hover .section-header-content .toolbar-btn {
+    opacity: 1;
+}
+
+/* Bookmarks Panel - Carousel Style */
+.sidebar-container.panel-open {
+    transform: translateX(-320px);
+}
+
+.bookmarks-panel {
+    position: fixed;
+    top: 0;
+    right: -320px;
+    width: 320px;
+    height: 100vh;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 16px var(--shadow-color);
+    z-index: 1000;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.bookmarks-panel.visible {
+    right: 0;
+}
+
+/* Use same header style as favorites settings */
+.bookmarks-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.bookmarks-panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.bookmarks-panel-close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.bookmarks-panel-close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Use same content style as favorites settings */
+.bookmarks-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.bookmarks-panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+/* Use same item style as favorites apps */
+.bookmark-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.bookmark-panel-item:hover {
+    background: var(--bg-hover);
+}
+
+.bookmark-panel-folder {
+    background: transparent;
+    cursor: default;
+    padding: 8px 12px;
+}
+
+.bookmark-panel-folder:hover {
+    background: transparent;
+}
+
+.bookmark-panel-folder-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.bookmark-panel-folder-header:hover {
+    background: var(--bg-hover);
+}
+
+.bookmark-panel-folder-toggle {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.bookmark-panel-folder-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.bookmark-panel-folder-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    fill: var(--text-secondary);
+}
+
+.bookmark-panel-folder-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.bookmark-panel-folder-children {
+    margin-left: 24px;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.bookmark-panel-folder-children.collapsed {
+    display: none;
+}
+
+/* Use same icon style as favorites apps */
+.bookmark-panel-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.bookmark-panel-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

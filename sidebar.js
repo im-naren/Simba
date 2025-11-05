@@ -57,9 +57,75 @@ async function updateBookmarkForTab(tab, bookmarkTitle) {
 
 let renderFavoritesTimeout = null;
 let isRenderingFavorites = false;
+let showDefaultFavorites = true; // Show default favorites by default
+let favoriteAppsVisibility = {}; // Visibility state for each default app
 
-// Helper function to get reliable favicon URL
-function getReliableFaviconUrl(url, tabFavIconUrl = null) {
+// Default favorites that are always available
+const DEFAULT_FAVORITES = [
+    {
+        url: 'https://github.com',
+        title: 'GitHub',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://mail.google.com/mail/u/0/#inbox',
+        title: 'Gmail',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://calendar.google.com/calendar',
+        title: 'Google Calendar',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://myapps.microsoft.com',
+        title: 'Microsoft Apps',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://app.devrev.ai',
+        title: 'DevRev',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://app5.greenhouse.io',
+        title: 'Greenhouse',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://www.linkedin.com',
+        title: 'LinkedIn',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://chatgpt.com',
+        title: 'ChatGPT',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://www.notion.so',
+        title: 'Notion',
+        isDefault: true,
+        addedAt: 0
+    },
+    {
+        url: 'https://slack.com',
+        title: 'Slack',
+        isDefault: true,
+        addedAt: 0
+    }
+];
+
+// Helper function to get reliable favicon URL (bypasses CORS issues)
+function getReliableFaviconUrl(url, tabFavIconUrl = null, forceFresh = false) {
     try {
         // Parse the URL
         const urlObj = new URL(url);
@@ -71,8 +137,8 @@ function getReliableFaviconUrl(url, tabFavIconUrl = null) {
             return getGenericFaviconDataUrl();
         }
         
-        // First, try to use the tab's favicon if it's valid and HTTP(S)
-        if (tabFavIconUrl && 
+        // First, try to use the tab's favicon if it's valid and HTTP(S) and not forcing fresh
+        if (!forceFresh && tabFavIconUrl && 
             !tabFavIconUrl.includes('chrome://') && 
             !tabFavIconUrl.includes('chrome-extension://') &&
             (tabFavIconUrl.startsWith('http://') || tabFavIconUrl.startsWith('https://'))) {
@@ -80,12 +146,26 @@ function getReliableFaviconUrl(url, tabFavIconUrl = null) {
             return tabFavIconUrl;
         }
         
-        // Always use Google's favicon service as reliable fallback
-        const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+        // Use Google's favicon service - reliable and CORS-free
+        // Use size 128 for better quality, add timestamp for cache busting when forcing fresh
+        const size = 128;
+        const timestamp = forceFresh ? `&t=${Date.now()}` : '';
         console.log('🌐 Using Google favicon service for:', hostname);
-        return googleFaviconUrl;
+        return `https://www.google.com/s2/favicons?sz=${size}&domain_url=${encodeURIComponent(url)}${timestamp}`;
     } catch (error) {
         console.error('❌ Error parsing URL for favicon:', url, error);
+        return getGenericFaviconDataUrl();
+    }
+}
+
+// Get fallback favicon URL using alternative method
+function getFallbackFaviconUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname;
+        // Try favicon.io service as alternative (more reliable)
+        return `https://favicon.io/favicon/${hostname}`;
+    } catch (error) {
         return getGenericFaviconDataUrl();
     }
 }
@@ -104,13 +184,57 @@ function getGenericFaviconDataUrl() {
 // Load favorites from storage
 async function loadFavorites() {
     try {
-        const result = await chrome.storage.local.get(['favorites', 'favoritesLastSaved']);
+        const result = await chrome.storage.local.get(['favorites', 'favoritesLastSaved', 'showDefaultFavorites', 'favoriteAppsVisibility']);
         favorites = result.favorites || [];
+        
+        // Load app visibility (default all visible)
+        favoriteAppsVisibility = result.favoriteAppsVisibility || {};
+        
+        // Always show default favorites (we control visibility per-app now)
+        showDefaultFavorites = true;
+        if (result.showDefaultFavorites === false) {
+            // Migrate old setting - if it was hidden, hide all apps instead
+            console.log('⚠️ Migrating old showDefaultFavorites=false setting');
+            DEFAULT_FAVORITES.forEach(app => {
+                if (favoriteAppsVisibility[app.url] === undefined) {
+                    favoriteAppsVisibility[app.url] = false;
+                }
+            });
+        }
+        
+        // Initialize visibility for any new apps
+        let needsSave = false;
+        DEFAULT_FAVORITES.forEach(app => {
+            if (favoriteAppsVisibility[app.url] === undefined) {
+                favoriteAppsVisibility[app.url] = true;
+                needsSave = true;
+            }
+        });
+        
+        // Save initialized values if needed
+        if (needsSave) {
+            await saveFavoriteAppsVisibility();
+        }
+        
         console.log('✅ Loaded favorites:', favorites.length, 'items');
+        console.log('✅ Apps visibility state:', favoriteAppsVisibility);
+        console.log('✅ Show default favorites:', showDefaultFavorites);
         await renderFavoritesDebounced();
     } catch (error) {
         console.error('❌ Error loading favorites:', error);
         favorites = [];
+    }
+}
+
+// Toggle default favorites visibility
+async function toggleDefaultFavorites() {
+    showDefaultFavorites = !showDefaultFavorites;
+    try {
+        await chrome.storage.local.set({ showDefaultFavorites });
+        await renderFavoritesDebounced();
+        console.log('✅ Default favorites', showDefaultFavorites ? 'shown' : 'hidden');
+    } catch (error) {
+        console.error('❌ Error toggling default favorites:', error);
     }
 }
 
@@ -156,6 +280,43 @@ async function addToFavorites(tabId) {
         return true;
     } catch (error) {
         console.error('❌ Error adding to favorites:', error);
+        return false;
+    }
+}
+
+// Add URL directly to favorites (without requiring a tab)
+async function addUrlToFavorites(url, title = null) {
+    try {
+        // Validate URL
+        const urlObj = new URL(url);
+        
+        // Check if already in favorites
+        if (favorites.some(f => f.url === url)) {
+            console.log('URL already in favorites');
+            return false;
+        }
+        
+        // Get favicon URL using Google's service
+        const hostname = urlObj.hostname;
+        const favIconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+        
+        // Use provided title or hostname as fallback
+        const favoriteTitle = title || hostname;
+        
+        // Add to favorites
+        favorites.push({
+            url: url,
+            title: favoriteTitle,
+            favIconUrl: favIconUrl,
+            addedAt: Date.now()
+        });
+        
+        await saveFavorites();
+        await renderFavoritesDebounced();
+        console.log('✅ Added URL to favorites:', favoriteTitle);
+        return true;
+    } catch (error) {
+        console.error('❌ Error adding URL to favorites:', error);
         return false;
     }
 }
@@ -219,8 +380,33 @@ async function renderFavorites() {
         // Clear existing content
         favoritesList.innerHTML = '';
         
+        // Combine default favorites with user favorites
+        let allFavorites = [];
+        if (showDefaultFavorites) {
+            // Add default favorites with FRESH favicon URLs (only if visible)
+            const visibleDefaults = DEFAULT_FAVORITES.filter(fav => {
+                const isVisible = favoriteAppsVisibility[fav.url] !== false;
+                console.log(`🔍 App: ${fav.title}, URL: ${fav.url}, Visible: ${isVisible}, State:`, favoriteAppsVisibility[fav.url]);
+                return isVisible;
+            });
+            
+            allFavorites = visibleDefaults.map(fav => ({
+                ...fav,
+                favIconUrl: getReliableFaviconUrl(fav.url, null, true) // forceFresh = true for defaults
+            }));
+            
+            console.log('✅ Visible default favorites:', visibleDefaults.length, 'of', DEFAULT_FAVORITES.length);
+        }
+        
+        // Add user favorites (filter out any that match default URLs)
+        const defaultUrls = DEFAULT_FAVORITES.map(f => f.url);
+        const userFavorites = favorites.filter(f => !defaultUrls.includes(f.url));
+        allFavorites = [...allFavorites, ...userFavorites];
+        
+        console.log('✅ Total favorites to render:', allFavorites.length);
+        
         // Show empty message if no favorites
-        if (favorites.length === 0) {
+        if (allFavorites.length === 0) {
             const noFavoritesMsg = document.createElement('div');
             noFavoritesMsg.className = 'no-favorites-message';
             noFavoritesMsg.textContent = 'No favorites yet. Right-click a tab to add it to favorites.';
@@ -243,12 +429,12 @@ async function renderFavorites() {
         }
         
         // Render each favorite
-        for (const favorite of favorites) {
+        for (const favorite of allFavorites) {
             const favoriteItem = createFavoriteElement(favorite, activeTabUrl);
             favoritesList.appendChild(favoriteItem);
         }
         
-        console.log('✅ Rendered', favorites.length, 'favorites');
+        console.log('✅ Rendered', allFavorites.length, 'favorites');
     } catch (error) {
         console.error('❌ Error rendering favorites:', error);
     } finally {
@@ -291,20 +477,45 @@ function createFavoriteElement(favorite, activeTabUrl = null) {
         favoriteItem.classList.add('active');
     }
     
-    // Favicon
+    // Favicon - with robust error handling and multiple fallbacks
     const favicon = document.createElement('img');
     favicon.className = 'favorite-favicon';
-    favicon.src = getReliableFaviconUrl(favorite.url, favorite.favIconUrl);
+    
+    // If this is a default favorite and favIconUrl is already set, use it
+    // Otherwise generate the URL (for user favorites, use their cached favIconUrl)
+    if (favorite.favIconUrl) {
+        favicon.src = favorite.favIconUrl;
+    } else {
+        favicon.src = getReliableFaviconUrl(favorite.url, null, false);
+    }
+    
     favicon.alt = favorite.title;
     
-    // Error handling for favicon - use generic globe icon as final fallback
+    // Robust error handling with fallback strategies (no CORS issues)
     let errorHandled = false;
+    let fallbackAttempted = false;
+    
     favicon.onerror = () => {
-        if (!errorHandled) {
+        if (errorHandled) return;
+        
+        if (!fallbackAttempted) {
+            // First fallback: Try alternative favicon service
+            fallbackAttempted = true;
+            console.warn('⚠️ Primary favicon failed for:', favorite.url, 'Trying fallback service');
+            setTimeout(() => {
+                favicon.src = getFallbackFaviconUrl(favorite.url);
+            }, 50);
+        } else {
+            // Final fallback: Use generic icon
             errorHandled = true;
-            console.warn('⚠️ Favicon failed to load for:', favorite.url, 'Using generic icon');
+            console.warn('⚠️ All favicon sources failed for:', favorite.url, 'Using generic icon');
             favicon.src = getGenericFaviconDataUrl();
         }
+    };
+    
+    // Handle successful loads
+    favicon.onload = () => {
+        console.log('✅ Favicon loaded successfully for:', favorite.title);
     };
     
     // Title (shown on hover)
@@ -313,40 +524,83 @@ function createFavoriteElement(favorite, activeTabUrl = null) {
     title.textContent = favorite.title;
     title.title = `${favorite.title}\n${favorite.url}`;
     
-    // Remove button
+    // Remove button (only for user-added favorites, not defaults)
     const removeBtn = document.createElement('button');
     removeBtn.className = 'favorite-remove';
-    removeBtn.innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-    `;
-    removeBtn.title = 'Remove from favorites';
-    removeBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        await removeFromFavorites(favorite.url);
-    });
     
-    // Click handler - open or switch to tab
+    if (favorite.isDefault) {
+        // For default favorites, show as less prominent
+        favoriteItem.classList.add('favorite-default');
+        removeBtn.style.display = 'none'; // Don't show remove button for defaults
+    } else {
+        removeBtn.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        `;
+        removeBtn.title = 'Remove from favorites';
+        removeBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            await removeFromFavorites(favorite.url);
+        });
+    }
+    
+    // Click handler - open and pin, or pin existing, or switch to pinned
     favoriteItem.addEventListener('click', async (e) => {
         e.preventDefault();
         try {
+            // Check ALL windows for existing tabs to prevent duplicates
             const tabs = await chrome.tabs.query({});
-            const existingTab = tabs.find(t => t.url === favorite.url);
+            
+            // Special handling for Gmail and Calendar - find tabs with URLs starting with these patterns
+            let existingTab = null;
+            if (favorite.url.startsWith('https://mail.google.com/mail')) {
+                existingTab = tabs.find(t => t.url && t.url.startsWith('https://mail.google.com/mail'));
+            } else if (favorite.url.startsWith('https://calendar.google.com/calendar')) {
+                existingTab = tabs.find(t => t.url && t.url.startsWith('https://calendar.google.com/calendar'));
+            } else {
+                existingTab = tabs.find(t => t.url === favorite.url);
+            }
             
             if (existingTab) {
-                // Switch to existing tab
+                // Tab exists - pin it if not pinned, and switch to it
+                if (!existingTab.pinned) {
+                    await chrome.tabs.update(existingTab.id, { pinned: true });
+                    console.log('✅ Pinned existing tab:', favorite.title);
+                }
+                // Always switch to the tab and focus its window
                 await chrome.tabs.update(existingTab.id, { active: true });
                 await chrome.windows.update(existingTab.windowId, { focused: true });
+                console.log('✅ Switched to favorite:', favorite.title);
             } else {
-                // Create new tab
-                await chrome.tabs.create({ url: favorite.url, active: true });
+                // Tab doesn't exist - create it as pinned from the start
+                const currentWindow = await chrome.windows.getCurrent();
+                const newTab = await chrome.tabs.create({ 
+                    url: favorite.url, 
+                    active: true,
+                    pinned: true,
+                    windowId: currentWindow.id  // Create in current window
+                });
+                console.log('✅ Opened and pinned favorite:', favorite.title);
             }
         } catch (error) {
             console.error('❌ Error opening favorite:', error);
         }
+    });
+    
+    // Right-click handler for editing URL (not for default favorites)
+    favoriteItem.addEventListener('contextmenu', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Don't allow editing default favorites
+        if (favorite.isDefault) {
+            return;
+        }
+        
+        await showEditFavoriteDialog(favorite);
     });
     
     // Assemble the favorite item
@@ -355,6 +609,290 @@ function createFavoriteElement(favorite, activeTabUrl = null) {
     favoriteItem.appendChild(removeBtn);
     
     return favoriteItem;
+}
+
+// Show edit dialog for favorite URL
+async function showEditFavoriteDialog(favorite) {
+    const newUrl = prompt('Edit URL for ' + favorite.title, favorite.url);
+    
+    if (newUrl === null) {
+        // User cancelled
+        return;
+    }
+    
+    if (!newUrl || newUrl.trim() === '') {
+        alert('URL cannot be empty');
+        return;
+    }
+    
+    // Validate URL
+    try {
+        new URL(newUrl);
+    } catch (error) {
+        alert('Invalid URL format');
+        return;
+    }
+    
+    // Update the favorite
+    await editFavoriteUrl(favorite.url, newUrl.trim());
+}
+
+// Edit favorite URL
+async function editFavoriteUrl(oldUrl, newUrl) {
+    try {
+        const favoriteIndex = favorites.findIndex(f => f.url === oldUrl);
+        if (favoriteIndex === -1) {
+            console.warn('Favorite not found:', oldUrl);
+            return false;
+        }
+        
+        // Check if new URL already exists in favorites
+        if (favorites.some(f => f.url === newUrl)) {
+            alert('This URL is already in your favorites');
+            return false;
+        }
+        
+        // Update the URL and refresh favicon
+        favorites[favoriteIndex].url = newUrl;
+        favorites[favoriteIndex].favIconUrl = getReliableFaviconUrl(newUrl);
+        
+        await saveFavorites();
+        await renderFavoritesDebounced();
+        console.log('✅ Updated favorite URL from', oldUrl, 'to', newUrl);
+        return true;
+    } catch (error) {
+        console.error('❌ Error editing favorite URL:', error);
+        return false;
+    }
+}
+
+// ==================================================
+// FAVORITES SETTINGS PANEL
+// ==================================================
+
+// Toggle favorites settings panel
+function toggleFavoritesSettingsPanel() {
+    const panel = document.getElementById('favoritesSettingsPanel');
+    if (panel) {
+        const isVisible = panel.classList.contains('visible');
+        if (isVisible) {
+            panel.classList.remove('visible');
+        } else {
+            panel.classList.add('visible');
+            renderFavoritesSettingsPanel();
+        }
+    }
+}
+
+// Render favorites settings panel with app toggles
+function renderFavoritesSettingsPanel() {
+    const appsList = document.getElementById('favoritesAppsList');
+    if (!appsList) return;
+    
+    appsList.innerHTML = '';
+    
+    DEFAULT_FAVORITES.forEach(app => {
+        const appItem = document.createElement('div');
+        appItem.className = 'favorites-app-item';
+        
+        const appInfo = document.createElement('div');
+        appInfo.className = 'favorites-app-info';
+        
+        // App icon
+        const appIcon = document.createElement('img');
+        appIcon.className = 'favorites-app-icon';
+        appIcon.src = getReliableFaviconUrl(app.url);
+        appIcon.onerror = () => { appIcon.src = getGenericFaviconDataUrl(); };
+        
+        // App name
+        const appName = document.createElement('span');
+        appName.className = 'favorites-app-name';
+        appName.textContent = app.title;
+        
+        appInfo.appendChild(appIcon);
+        appInfo.appendChild(appName);
+        
+        // Toggle switch
+        const toggleContainer = document.createElement('label');
+        toggleContainer.className = 'favorites-app-toggle';
+        
+        const toggleInput = document.createElement('input');
+        toggleInput.type = 'checkbox';
+        toggleInput.checked = favoriteAppsVisibility[app.url] !== false;
+        toggleInput.addEventListener('change', async () => {
+            favoriteAppsVisibility[app.url] = toggleInput.checked;
+            await saveFavoriteAppsVisibility();
+            await renderFavoritesDebounced();
+        });
+        
+        const toggleSlider = document.createElement('span');
+        toggleSlider.className = 'toggle-slider';
+        
+        toggleContainer.appendChild(toggleInput);
+        toggleContainer.appendChild(toggleSlider);
+        
+        appItem.appendChild(appInfo);
+        appItem.appendChild(toggleContainer);
+        appsList.appendChild(appItem);
+    });
+}
+
+// Save app visibility preferences
+async function saveFavoriteAppsVisibility() {
+    try {
+        await chrome.storage.local.set({ favoriteAppsVisibility });
+        console.log('✅ Saved favorites app visibility');
+    } catch (error) {
+        console.error('❌ Error saving favorites app visibility:', error);
+    }
+}
+
+// Debug helper - accessible from console
+window.debugFavorites = function() {
+    console.log('=== FAVORITES DEBUG INFO ===');
+    console.log('showDefaultFavorites:', showDefaultFavorites);
+    console.log('favoriteAppsVisibility:', favoriteAppsVisibility);
+    console.log('favorites array:', favorites);
+    console.log('DEFAULT_FAVORITES:', DEFAULT_FAVORITES);
+    console.log('Visible apps:', DEFAULT_FAVORITES.filter(fav => favoriteAppsVisibility[fav.url] !== false).map(f => f.title));
+    console.log('Hidden apps:', DEFAULT_FAVORITES.filter(fav => favoriteAppsVisibility[fav.url] === false).map(f => f.title));
+};
+
+// ==================================================
+// BOOKMARKS PANEL
+// ==================================================
+
+// Toggle bookmarks panel with carousel effect
+function toggleBookmarksPanel() {
+    const panel = document.getElementById('bookmarksPanel');
+    const sidebarContainer = document.getElementById('sidebar-container');
+    
+    if (panel && sidebarContainer) {
+        const isVisible = panel.classList.contains('visible');
+        if (isVisible) {
+            // Close panel - remove carousel effect
+            panel.classList.remove('visible');
+            sidebarContainer.classList.remove('panel-open');
+        } else {
+            // Open panel - add carousel effect
+            panel.classList.add('visible');
+            sidebarContainer.classList.add('panel-open');
+            renderBookmarksPanel();
+        }
+    }
+}
+
+// Render bookmarks in the side panel
+async function renderBookmarksPanel() {
+    const bookmarksList = document.getElementById('bookmarksPanelList');
+    if (!bookmarksList) return;
+    
+    bookmarksList.innerHTML = '<div style="padding: 12px; color: var(--text-secondary); font-size: 12px;">Loading bookmarks...</div>';
+    
+    try {
+        // Get the bookmarks tree
+        const bookmarksTree = await chrome.bookmarks.getTree();
+        bookmarksList.innerHTML = '';
+        
+        // Render each root folder
+        if (bookmarksTree && bookmarksTree[0] && bookmarksTree[0].children) {
+            bookmarksTree[0].children.forEach(rootNode => {
+                if (rootNode.children) {
+                    renderBookmarkNode(rootNode, bookmarksList, 0);
+                }
+            });
+        }
+        
+        console.log('✅ Rendered bookmarks panel');
+    } catch (error) {
+        console.error('❌ Error loading bookmarks:', error);
+        bookmarksList.innerHTML = '<div style="padding: 12px; color: var(--text-secondary); font-size: 12px;">Error loading bookmarks</div>';
+    }
+}
+
+// Render a single bookmark node (folder or bookmark)
+function renderBookmarkNode(node, parentElement, depth) {
+    if (node.url) {
+        // It's a bookmark (not a folder)
+        const bookmarkItem = document.createElement('a');
+        bookmarkItem.className = 'bookmark-panel-item';
+        bookmarkItem.href = node.url;
+        bookmarkItem.target = '_blank';
+        bookmarkItem.style.marginLeft = `${depth * 16}px`;
+        
+        // Favicon
+        const favicon = document.createElement('img');
+        favicon.className = 'bookmark-panel-icon';
+        favicon.src = `chrome://favicon/${node.url}`;
+        favicon.onerror = () => { favicon.src = getGenericFaviconDataUrl(); };
+        
+        // Title
+        const title = document.createElement('span');
+        title.className = 'bookmark-panel-title';
+        title.textContent = node.title || 'Untitled';
+        
+        bookmarkItem.appendChild(favicon);
+        bookmarkItem.appendChild(title);
+        
+        // Click handler
+        bookmarkItem.addEventListener('click', (e) => {
+            e.preventDefault();
+            chrome.tabs.create({ url: node.url, active: true });
+        });
+        
+        parentElement.appendChild(bookmarkItem);
+    } else if (node.children) {
+        // It's a folder
+        const folderContainer = document.createElement('div');
+        folderContainer.className = 'bookmark-panel-folder';
+        folderContainer.style.marginLeft = `${depth * 16}px`;
+        
+        // Folder header
+        const folderHeader = document.createElement('div');
+        folderHeader.className = 'bookmark-panel-folder-header';
+        
+        // Toggle icon
+        const toggle = document.createElement('div');
+        toggle.className = 'bookmark-panel-folder-toggle';
+        toggle.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>`;
+        
+        // Folder icon
+        const folderIconWrapper = document.createElement('div');
+        folderIconWrapper.style.width = '16px';
+        folderIconWrapper.style.height = '16px';
+        folderIconWrapper.style.flexShrink = '0';
+        folderIconWrapper.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="bookmark-panel-folder-icon"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
+        
+        // Folder name
+        const folderName = document.createElement('span');
+        folderName.className = 'bookmark-panel-folder-name';
+        folderName.textContent = node.title || 'Unnamed Folder';
+        
+        folderHeader.appendChild(toggle);
+        folderHeader.appendChild(folderIconWrapper);
+        folderHeader.appendChild(folderName);
+        
+        // Children container
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'bookmark-panel-folder-children';
+        
+        // Render children
+        node.children.forEach(child => {
+            renderBookmarkNode(child, childrenContainer, depth + 1);
+        });
+        
+        // Toggle functionality
+        folderHeader.addEventListener('click', () => {
+            const isCollapsed = childrenContainer.classList.toggle('collapsed');
+            toggle.classList.toggle('collapsed', isCollapsed);
+        });
+        
+        folderContainer.appendChild(folderHeader);
+        folderContainer.appendChild(childrenContainer);
+        parentElement.appendChild(folderContainer);
+    }
 }
 
 // Pinned favicons function removed - using Chrome's native pinned tabs in favorites bar
@@ -1375,6 +1913,79 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.favoritesSectionCollapsed) {
                 favoritesContent.classList.add('collapsed');
                 favoritesToggle.classList.add('collapsed');
+            }
+        });
+    }
+    
+    // Setup favorites settings button
+    const favoritesSettingsBtn = document.getElementById('favoritesSettingsBtn');
+    if (favoritesSettingsBtn) {
+        favoritesSettingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavoritesSettingsPanel();
+        });
+    }
+    
+    // Setup favorites settings close button
+    const favoritesSettingsCloseBtn = document.getElementById('favoritesSettingsCloseBtn');
+    if (favoritesSettingsCloseBtn) {
+        favoritesSettingsCloseBtn.addEventListener('click', () => {
+            toggleFavoritesSettingsPanel();
+        });
+    }
+    
+    // Close favorites settings panel when clicking outside
+    const favoritesSettingsPanel = document.getElementById('favoritesSettingsPanel');
+    if (favoritesSettingsPanel) {
+        document.addEventListener('click', (e) => {
+            if (favoritesSettingsPanel.classList.contains('visible') &&
+                !favoritesSettingsPanel.contains(e.target) &&
+                favoritesSettingsBtn &&
+                !favoritesSettingsBtn.contains(e.target)) {
+                favoritesSettingsPanel.classList.remove('visible');
+            }
+        });
+    }
+    
+    // Setup bookmarks section header click
+    const bookmarksSectionHeader = document.getElementById('bookmarksSectionHeader');
+    const bookmarksSettingsBtn = document.getElementById('bookmarksSettingsBtn');
+    
+    if (bookmarksSectionHeader) {
+        bookmarksSectionHeader.addEventListener('click', (e) => {
+            // Don't trigger if clicking the button
+            if (!bookmarksSettingsBtn || !bookmarksSettingsBtn.contains(e.target)) {
+                toggleBookmarksPanel();
+            }
+        });
+    }
+    
+    if (bookmarksSettingsBtn) {
+        bookmarksSettingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleBookmarksPanel();
+        });
+    }
+    
+    // Setup bookmarks panel close button
+    const bookmarksPanelCloseBtn = document.getElementById('bookmarksPanelCloseBtn');
+    if (bookmarksPanelCloseBtn) {
+        bookmarksPanelCloseBtn.addEventListener('click', () => {
+            toggleBookmarksPanel();
+        });
+    }
+    
+    // Close bookmarks panel when clicking outside
+    const bookmarksPanel = document.getElementById('bookmarksPanel');
+    const sidebarContainer = document.getElementById('sidebar-container');
+    if (bookmarksPanel && sidebarContainer) {
+        document.addEventListener('click', (e) => {
+            if (bookmarksPanel.classList.contains('visible') &&
+                !bookmarksPanel.contains(e.target) &&
+                bookmarksSectionHeader &&
+                !bookmarksSectionHeader.contains(e.target)) {
+                bookmarksPanel.classList.remove('visible');
+                sidebarContainer.classList.remove('panel-open');
             }
         });
     }

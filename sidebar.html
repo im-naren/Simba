@@ -161,6 +161,21 @@
             </button>
         </div>
         
+        <!-- Bookmarks Section -->
+        <div class="bookmarks-section-header" id="bookmarksSectionHeader">
+            <div class="section-header-content">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <h3>Bookmarks</h3>
+                <button class="toolbar-btn" id="bookmarksSettingsBtn" title="View Bookmarks">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
         <!-- Favorites Section -->
         <div class="favorites-section" id="favoritesSection">
             <div class="favorites-header">
@@ -170,10 +185,49 @@
                     </svg>
                 </button>
                 <h3>Favorites</h3>
+                <button class="toolbar-btn" id="favoritesSettingsBtn" title="Customize Favorites">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                </button>
             </div>
             <div class="favorites-content">
                 <div class="favorites-list" id="favoritesList">
                     <!-- Favorite tabs will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Favorites Settings Panel -->
+        <div class="favorites-settings-panel" id="favoritesSettingsPanel">
+            <div class="favorites-settings-header">
+                <h3>Customize Favorites</h3>
+                <button class="favorites-settings-close-btn" id="favoritesSettingsCloseBtn">×</button>
+            </div>
+            <div class="favorites-settings-content">
+                <div class="favorites-settings-section">
+                    <h4>Default Apps</h4>
+                    <p class="favorites-settings-description">Choose which apps appear in your favorites bar</p>
+                    <div class="favorites-apps-list" id="favoritesAppsList">
+                        <!-- App toggles will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bookmarks Panel -->
+        <div class="bookmarks-panel" id="bookmarksPanel">
+            <div class="bookmarks-panel-header">
+                <h3>Bookmarks</h3>
+                <button class="bookmarks-panel-close-btn" id="bookmarksPanelCloseBtn">×</button>
+            </div>
+            <div class="bookmarks-panel-content">
+                <div class="favorites-settings-section">
+                    <h4>Chrome Bookmarks</h4>
+                    <p class="favorites-settings-description">Browse and open your Chrome bookmarks</p>
+                    <div class="bookmarks-panel-list" id="bookmarksPanelList">
+                        <!-- Bookmarks will be dynamically added here -->
+                    </div>
                 </div>
             </div>
         </div>

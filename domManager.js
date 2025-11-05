@@ -1,6 +1,22 @@
 import { Utils } from './utils.js';
 import { RESTORE_ICON } from './icons.js';
 
+// Helper function to convert Chrome group color names to CSS colors
+function getChromeGroupColor(colorName) {
+    const colorMap = {
+        'grey': '#5F6368',
+        'blue': '#1A73E8',
+        'red': '#D93025',
+        'yellow': '#F9AB00',
+        'green': '#1E8E3E',
+        'pink': '#D01884',
+        'purple': '#9334E6',
+        'cyan': '#007B83',
+        'orange': '#E8710A'
+    };
+    return colorMap[colorName] || '#5F6368';
+}
+
 export function setupDOMElements(createNewSpace, createNewTab) {
     // Get DOM Elements (must be done here, not at module load time)
     const spacesList = document.getElementById('spacesList');
@@ -313,61 +329,120 @@ export function showTabContextMenu(x, y, tab, isPinned, isBookmarkOnly, tabEleme
         separator.className = 'context-menu-separator';
         contextMenu.appendChild(separator);
 
-        // 2. Move to Space
-        const moveToSpaceItem = document.createElement('div');
-        moveToSpaceItem.className = 'context-menu-item with-submenu';
-        moveToSpaceItem.textContent = 'Move to Space';
+        // 2. Move to Group (using Chrome's native tab groups)
+        // Build the group menu asynchronously
+        const buildGroupMenu = async () => {
+            const moveToGroupItem = document.createElement('div');
+            moveToGroupItem.className = 'context-menu-item with-submenu';
+            moveToGroupItem.textContent = 'Move to Group';
 
-        const submenu = document.createElement('div');
-        submenu.className = 'context-menu submenu';
+            const submenu = document.createElement('div');
+            submenu.className = 'context-menu submenu';
 
-        // Add active spaces
-        const currentSpace = spaces.find(s => s.temporaryTabs.includes(tab.id) || s.spaceBookmarks.includes(tab.id));
-        const otherActiveSpaces = spaces.filter(s => s.id !== currentSpace?.id);
-        otherActiveSpaces.forEach(space => {
-            const submenuItem = document.createElement('div');
-            submenuItem.className = 'context-menu-item';
-            submenuItem.textContent = space.name;
-            submenuItem.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                contextMenu.remove(); // Close menu immediately for better UX
+            try {
+                // Get all existing tab groups in the current window (using Promise-based API)
+                const groups = await chrome.tabGroups.query({ windowId: tab.windowId });
                 
-                await moveTabToSpace(tab.id, space.id, false);
-                // Set the space as active, but prevent it from auto-activating a different tab
-                await setActiveSpace(space.id, false); 
-                // Explicitly activate the tab that was just moved
-                await chrome.tabs.update(tab.id, { active: true });
-            });
-            submenu.appendChild(submenuItem);
-        });
+                // Filter out the group that the tab is currently in
+                const otherGroups = groups.filter(g => g.id !== tab.groupId);
 
-        // Add inactive spaces
-        const activeSpaceNames = new Set(spaces.map(s => s.name));
-        const inactiveSpaceFolders = allBookmarkSpaceFolders.filter(f => !f.url && !activeSpaceNames.has(f.title));
-        
-        if (otherActiveSpaces.length > 0 && inactiveSpaceFolders.length > 0) {
-            const separator = document.createElement('div');
-            separator.className = 'context-menu-separator';
-            submenu.appendChild(separator);
-        }
+                // Add existing groups to the submenu
+                otherGroups.forEach(group => {
+                    const submenuItem = document.createElement('div');
+                    submenuItem.className = 'context-menu-item';
+                    
+                    // Add color indicator
+                    const colorIndicator = document.createElement('span');
+                    colorIndicator.style.display = 'inline-block';
+                    colorIndicator.style.width = '10px';
+                    colorIndicator.style.height = '10px';
+                    colorIndicator.style.borderRadius = '50%';
+                    colorIndicator.style.marginRight = '8px';
+                    colorIndicator.style.backgroundColor = getChromeGroupColor(group.color);
+                    
+                    submenuItem.appendChild(colorIndicator);
+                    submenuItem.appendChild(document.createTextNode(group.title || 'Unnamed Group'));
+                    
+                    submenuItem.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        contextMenu.remove();
+                        
+                        try {
+                            // Move tab to the selected group
+                            await chrome.tabs.group({ groupId: group.id, tabIds: [tab.id] });
+                            console.log(`✅ Moved tab ${tab.id} to group "${group.title}"`);
+                        } catch (error) {
+                            console.error('❌ Error moving tab to group:', error);
+                        }
+                    });
+                    submenu.appendChild(submenuItem);
+                });
 
-        inactiveSpaceFolders.forEach(folder => {
-            const submenuItem = document.createElement('div');
-            submenuItem.className = 'context-menu-item';
-            submenuItem.textContent = folder.title;
-            submenuItem.addEventListener('click', (e) => {
-                e.stopPropagation();
-                createSpaceFromInactive(folder.title, tab);
-                contextMenu.remove();
-            });
-            submenu.appendChild(submenuItem);
-        });
+                // Add separator if there are existing groups
+                if (otherGroups.length > 0) {
+                    const separator = document.createElement('div');
+                    separator.className = 'context-menu-separator';
+                    submenu.appendChild(separator);
+                }
 
-        // Only add the "Move to" menu if there's somewhere to move to
-        if (submenu.hasChildNodes()) {
-            moveToSpaceItem.appendChild(submenu);
-            contextMenu.appendChild(moveToSpaceItem);
-        }
+                // Add "New Group" option
+                const newGroupItem = document.createElement('div');
+                newGroupItem.className = 'context-menu-item';
+                newGroupItem.textContent = '+ New Group';
+                newGroupItem.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    contextMenu.remove();
+                    
+                    try {
+                        // Create a new group with this tab
+                        const groupId = await chrome.tabs.group({ tabIds: [tab.id] });
+                        
+                        // Prompt for group name
+                        const groupName = prompt('Enter group name (optional):');
+                        if (groupName) {
+                            await chrome.tabGroups.update(groupId, { title: groupName });
+                        }
+                        
+                        console.log(`✅ Created new group with tab ${tab.id}`);
+                    } catch (error) {
+                        console.error('❌ Error creating new group:', error);
+                    }
+                });
+                submenu.appendChild(newGroupItem);
+
+                // Add "Remove from Group" option if tab is in a group
+                if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
+                    const separator = document.createElement('div');
+                    separator.className = 'context-menu-separator';
+                    submenu.appendChild(separator);
+
+                    const ungroupItem = document.createElement('div');
+                    ungroupItem.className = 'context-menu-item';
+                    ungroupItem.textContent = 'Remove from Group';
+                    ungroupItem.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        contextMenu.remove();
+                        
+                        try {
+                            await chrome.tabs.ungroup([tab.id]);
+                            console.log(`✅ Removed tab ${tab.id} from group`);
+                        } catch (error) {
+                            console.error('❌ Error removing tab from group:', error);
+                        }
+                    });
+                    submenu.appendChild(ungroupItem);
+                }
+
+                // Add submenu to the menu item
+                moveToGroupItem.appendChild(submenu);
+                contextMenu.appendChild(moveToGroupItem);
+            } catch (error) {
+                console.error('❌ Error building group menu:', error);
+            }
+        };
+
+        // Build the group menu (async)
+        buildGroupMenu();
     }
 
     // Archive Tab (Only for active tabs)
