@@ -2195,8 +2195,8 @@ function createTabGroupElement(tabGroup) {
     console.log('🚀 Tab Group container display set to:', tabGroupContainer.style.display);
 
     // Set tabGroup background color based on the tab group color
-    sidebarContainer.style.setProperty('--group-bg-color', `var(--chrome-${space.color}-color, rgba(255, 255, 255, 0.1))`);
-    sidebarContainer.style.setProperty('--group-bg-color-dark', `var(--chrome-${space.color}-color-dark, rgba(255, 255, 255, 0.1))`);
+    sidebarContainer.style.setProperty('--group-bg-color', `var(--chrome-${tabGroup.color}-color, rgba(255, 255, 255, 0.1))`);
+    sidebarContainer.style.setProperty('--group-bg-color-dark', `var(--chrome-${tabGroup.color}-color-dark, rgba(255, 255, 255, 0.1))`);
 
     // Set up color select
     const colorSelect = tabGroupElement.querySelector('#tabGroupColorSelect');
@@ -2213,7 +2213,7 @@ function createTabGroupElement(tabGroup) {
 
             // Update tabGroup background color
             sidebarContainer.style.setProperty('--group-bg-color', `var(--chrome-${newColor}-color, rgba(255, 255, 255, 0.1))`);
-            sidebarContainer.style.setProperty('--group-bg-color-dark', `var(--chrome-${space.color}-color-dark, rgba(255, 255, 255, 0.1))`);
+            sidebarContainer.style.setProperty('--group-bg-color-dark', `var(--chrome-${newColor}-color-dark, rgba(255, 255, 255, 0.1))`);
 
             saveTabGroups();
             await updateTabGroupSwitcher();
@@ -2316,7 +2316,7 @@ function createTabGroupElement(tabGroup) {
     
     // IMPORTANT: After appendChild, tabGroupElement (DocumentFragment) is empty!
     // We must query from the DOM using the tabGroup ID
-    const tabGroupContainerInDOM = document.querySelector(`[data-group-id="${space.id}"]`);
+    const tabGroupContainerInDOM = document.querySelector(`[data-group-id="${tabGroup.id}"]`);
     console.log('📍 Tab Group in DOM found:', !!tabGroupContainerInDOM);
     
     if (!tabGroupContainerInDOM) {
@@ -2326,7 +2326,7 @@ function createTabGroupElement(tabGroup) {
     
     // NOW get the containers from the DOM (not from the fragment)
     const tempContainer = tabGroupContainerInDOM.querySelector('[data-tab-type="temporary"]');
-    
+
     // Set up drag and drop
     setupDragAndDrop(tempContainer);
 
@@ -3000,88 +3000,6 @@ async function createTwoLevelDomainGroupElement(group, groupId, isBookmark = fal
     
     groupDiv.appendChild(header);
     groupDiv.appendChild(subGroupsContainer);
-    
-    return groupDiv;
-}
-
-async function createTabGroupElement(group, groupId) {
-    const groupDiv = document.createElement('div');
-    groupDiv.className = 'tree-domain-group';
-    groupDiv.dataset.groupId = group.groupId;
-    
-    // Create header
-    const header = document.createElement('div');
-    header.className = 'tree-domain-header';
-    
-    // Apply group color as left border indicator
-    if (group.groupColor && group.groupColor !== 'grey') {
-        header.style.borderLeft = `3px solid var(--chrome-${group.groupColor}-color, rgba(255, 255, 255, 0.3))`;
-        header.style.paddingLeft = '5px';
-    }
-    
-    // Expand icon
-    const expandIcon = document.createElement('div');
-    expandIcon.className = 'tree-expand-icon expanded';
-    expandIcon.innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-    `;
-    
-    // Group icon (folder icon or colored circle)
-    const groupIcon = document.createElement('div');
-    groupIcon.className = 'tree-domain-icon';
-    groupIcon.style.width = '16px';
-    groupIcon.style.height = '16px';
-    groupIcon.style.borderRadius = '50%';
-    groupIcon.style.backgroundColor = `var(--chrome-${group.groupColor}-color, #999)`;
-    groupIcon.style.flexShrink = '0';
-    
-    // Group name
-    const groupName = document.createElement('div');
-    groupName.className = 'tree-domain-name';
-    groupName.textContent = group.groupName;
-    groupName.style.fontWeight = 'bold';
-    
-    // Tab count
-    const tabCount = document.createElement('div');
-    tabCount.className = 'tree-domain-count';
-    tabCount.textContent = group.tabs.length.toString();
-    
-    header.appendChild(expandIcon);
-    header.appendChild(groupIcon);
-    header.appendChild(groupName);
-    header.appendChild(tabCount);
-    
-    // Create tabs container
-    const tabsContainer = document.createElement('div');
-    tabsContainer.className = 'tree-domain-tabs expanded';
-    
-    // Apply group color to tabs container for vertical line
-    if (group.groupColor && group.groupColor !== 'grey') {
-        tabsContainer.style.setProperty('--group-line-color', `var(--chrome-${group.groupColor}-color)`);
-    }
-    
-    // Create tab elements
-    for (const tab of group.tabs) {
-        const tabElement = await createTreeTabElement(tab, group.groupId);
-        tabsContainer.appendChild(tabElement);
-    }
-    
-    // Toggle expand/collapse
-    header.addEventListener('click', () => {
-        const isExpanded = tabsContainer.classList.contains('expanded');
-        if (isExpanded) {
-            tabsContainer.classList.remove('expanded');
-            expandIcon.classList.remove('expanded');
-        } else {
-            tabsContainer.classList.add('expanded');
-            expandIcon.classList.add('expanded');
-        }
-    });
-    
-    groupDiv.appendChild(header);
-    groupDiv.appendChild(tabsContainer);
     
     return groupDiv;
 }
