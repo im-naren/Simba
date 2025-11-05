@@ -49,7 +49,7 @@ const Utils = {
 
     getSettings: async function() {
         const defaultSettings = {
-            defaultSpaceName: 'Home',
+            defaultTabGroupName: 'Home',
             autoArchiveEnabled: false, // Default: disabled
             autoArchiveIdleMinutes: 30, // Default: 30 minutes
             // ... other settings ...
@@ -113,13 +113,13 @@ const Utils = {
         }
     },
 
-    updateBookmarkTitleIfNeeded: async function(tab, activeSpace, newTitle) {    
-        console.log(`Attempting to update bookmark for pinned tab ${tab.id} in space ${activeSpace.name} to title: ${newTitle}`);
+    updateBookmarkTitleIfNeeded: async function(tab, activeTabGroup, newTitle) {    
+        console.log(`Attempting to update bookmark for pinned tab ${tab.id} in tab group ${activeTabGroup.name} to title: ${newTitle}`);
     
         try {
-            const spaceFolder = await LocalStorage.getOrCreateSpaceFolder(activeSpace.name);
-            if (!spaceFolder) {
-                console.error(`Bookmark folder for space ${activeSpace.name} not found.`);
+            const tabGroupFolder = await LocalStorage.getOrCreateTabGroupFolder(activeTabGroup.name);
+            if (!tabGroupFolder) {
+                console.error(`Bookmark folder for tab group ${activeTabGroup.name} not found.`);
                 return;
             }
     
@@ -146,9 +146,9 @@ const Utils = {
                 return false; // Not found in this folder
             };
     
-            const updated = await findAndUpdate(spaceFolder.id);
+            const updated = await findAndUpdate(tabGroupFolder.id);
             if (!updated) {
-                console.log(`Bookmark for URL ${tab.url} not found in space folder ${activeSpace.name}.`);
+                console.log(`Bookmark for URL ${tab.url} not found in tab group folder ${activeTabGroup.name}.`);
             }
     
         } catch (error) {
@@ -174,12 +174,12 @@ const Utils = {
     },
 
     // Add a tab to the archive
-    addArchivedTab: async function(tabData) { // tabData = { url, name, spaceId, archivedAt }
-        if (!tabData || !tabData.url || !tabData.name || !tabData.spaceId) return;
+    addArchivedTab: async function(tabData) { // tabData = { url, name, groupId, archivedAt }
+        if (!tabData || !tabData.url || !tabData.name || !tabData.groupId) return;
 
         const archivedTabs = await this.getArchivedTabs();
 
-        const exists = archivedTabs.some(t => t.url === tabData.url && t.spaceId === tabData.spaceId);
+        const exists = archivedTabs.some(t => t.url === tabData.url && t.groupId === tabData.groupId);
         if (exists) {
             console.log(`Tab already archived: ${tabData.name}`);
             return; // Don't add duplicates
@@ -198,24 +198,26 @@ const Utils = {
         }
 
         await this.saveArchivedTabs(archivedTabs);
-        console.log(`Archived tab: ${tabData.name} from space ${tabData.spaceId}`);
+        console.log(`Archived tab: ${tabData.name} from tab group ${tabData.groupId}`);
     },
 
-    // Function to archive a tab (likely called from context menu)
+    // Function to archive a tab (called from context menu)
     archiveTab: async function(tabId) {
         try {
             const tab = await chrome.tabs.get(tabId);
-            if (!tab || !activeSpaceId) return;
+            if (!tab || !tab.groupId || tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
+                console.warn('Cannot archive tab: no group ID found');
+                return;
+            }
 
             const tabData = {
                 url: tab.url,
                 name: tab.title,
-                spaceId: activeSpaceId // Archive within the current space
+                groupId: tab.groupId // Archive within the tab's current group
             };
 
             await this.addArchivedTab(tabData);
             await chrome.tabs.remove(tabId); // Close the original tab
-            // Optionally: Refresh sidebar view if needed, though handleTabRemove should cover it
 
         } catch (error) {
             console.error(`Error archiving tab ${tabId}:`, error);
@@ -223,32 +225,32 @@ const Utils = {
     },
 
     // Remove a tab from the archive (e.g., after restoration)
-    removeArchivedTab: async function(url, spaceId) {
-        if (!url || !spaceId) return;
+    removeArchivedTab: async function(url, groupId) {
+        if (!url || !groupId) return;
 
         let archivedTabs = await this.getArchivedTabs();
-        archivedTabs = archivedTabs.filter(tab => !(tab.url === url && tab.spaceId === spaceId));
+        archivedTabs = archivedTabs.filter(tab => !(tab.url === url && tab.groupId === groupId));
         await this.saveArchivedTabs(archivedTabs);
-        console.log(`Removed archived tab: ${url} from space ${spaceId}`);
+        console.log(`Removed archived tab: ${url} from tab group ${groupId}`);
     },
 
     restoreArchivedTab: async function(archivedTabData) {
         try {
-            // Create the tab in the original space's group
+            // Create the tab in the original tab group
             const newTab = await chrome.tabs.create({
                 url: archivedTabData.url,
                 active: true, // Make it active
                 // windowId: currentWindow.id // Ensure it's in the current window
             });
 
-            // Immediately group the new tab into the correct space
+            // Immediately group the new tab into the correct tab group
             await chrome.tabs.group({ tabIds: [newTab.id] });
 
             // Remove from archive storage
-            await this.removeArchivedTab(archivedTabData.url, archivedTabData.spaceId);
+            await this.removeArchivedTab(archivedTabData.url, archivedTabData.groupId);
 
             // The handleTabCreated and handleTabUpdate listeners should add the tab to the UI.
-            // If not, you might need to manually add it or refresh the space view.
+            // If not, you might need to manually add it or refresh the tab group view.
 
         } catch (error) {
             console.error(`Error restoring archived tab ${archivedTabData.url}:`, error);
