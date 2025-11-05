@@ -2088,7 +2088,7 @@ async function initSidebar() {
             await setActiveTabGroup(unifiedTabGroup.id);
             
             // Hide tabGroup switcher in unified view
-            const tabGroupSwitcherContainer = document.querySelector('.space-switcher-container');
+            const tabGroupSwitcherContainer = document.querySelector('.tab-group-switcher-container');
             if (tabGroupSwitcherContainer) {
                 tabGroupSwitcherContainer.style.display = 'none';
             }
@@ -2149,7 +2149,7 @@ async function initSidebar() {
             // (pinned favicons removed)
             
             // Hide tabGroup switcher in unified view
-            const tabGroupSwitcherContainer = document.querySelector('.space-switcher-container');
+            const tabGroupSwitcherContainer = document.querySelector('.tab-group-switcher-container');
             if (tabGroupSwitcherContainer) {
                 tabGroupSwitcherContainer.style.display = 'none';
             }
@@ -2273,7 +2273,7 @@ function createTabGroupElement(tabGroup) {
         });
     }
 
-    // Set up clean tabs button
+    // Set up clean tabs button (if it exists in template)
     const cleanBtn = tabGroupElement.querySelector('.clean-tabs-btn');
     if (cleanBtn) {
         cleanBtn.addEventListener('click', () => cleanTemporaryTabs(tabGroup.id));
@@ -2281,7 +2281,7 @@ function createTabGroupElement(tabGroup) {
 
     // Set up options menu
     const newFolderBtn = tabGroupElement.querySelector('.new-folder-btn');
-    const deleteTabGroupBtn = tabGroupElement.querySelector('.delete-space-btn');
+    const deleteTabGroupBtn = tabGroupElement.querySelector('.delete-tab-group-btn');
 
     if (newFolderBtn) {
         newFolderBtn.addEventListener('click', () => {
