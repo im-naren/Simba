@@ -6,18 +6,18 @@ const LocalStorage = {
         }
         return folder;
     },
-    getOrCreateSpaceFolder: async function(spaceName) {
+    getOrCreateTabGroupFolder: async function(tabGroupName) {
         const arcifyFolder = await this.getOrCreateArcifyFolder();
         const children = await chrome.bookmarks.getChildren(arcifyFolder.id);
-        let spaceFolder = children.find((f) => f.title === spaceName);
+        let tabGroupFolder = children.find((f) => f.title === tabGroupName);
 
-        if (!spaceFolder) {
-            spaceFolder = await chrome.bookmarks.create({
+        if (!tabGroupFolder) {
+            tabGroupFolder = await chrome.bookmarks.create({
                 parentId: arcifyFolder.id,
-                title: spaceName
+                title: tabGroupName
             });
         }
-        return spaceFolder;
+        return tabGroupFolder;
     },
 
     // --- Recursive Helper Function to Merge Contents ---
@@ -60,9 +60,9 @@ const LocalStorage = {
         }
     },
 
-    // --- Updated Function to Merge Duplicate Space Folders ---
-    mergeDuplicateSpaceFolders: async function() {
-        console.log("Checking for duplicate space folders...");
+    // --- Updated Function to Merge Duplicate Tab Group Folders ---
+    mergeDuplicateTabGroupFolders: async function() {
+        console.log("Checking for duplicate tab group folders...");
         try {
             const [ arcifyFolder ] = await chrome.bookmarks.search({ title: 'Arcify' });
             if (!arcifyFolder) {
@@ -117,7 +117,7 @@ const LocalStorage = {
             console.log("Duplicate folder check complete.");
 
         } catch (error) {
-            console.error("Error during duplicate space folder merge process:", error);
+            console.error("Error during duplicate tab group folder merge process:", error);
         }
     },
     // --- End of Updated Function ---
